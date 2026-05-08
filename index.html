@@ -726,7 +726,23 @@ function setTool(name) {
 
 document.getElementById('toolPen').addEventListener('click', () => setTool('pen'));
 document.getElementById('toolEraser').addEventListener('click', () => setTool('eraser'));
-document.getElementById('toolEyedropper').addEventListener('click', () => setTool('eyedropper'));
+document.getElementById('toolEyedropper').addEventListener('click', () => {
+  // EyeDropper API が使える場合は画面全体から色取得
+  if (window.EyeDropper) {
+    const eyeDropper = new EyeDropper();
+    eyeDropper.open().then(result => {
+      setCurrentColor(result.sRGBHex);
+      setTool('pen');
+      showToast('色を取得しました：' + result.sRGBHex);
+    }).catch(() => {
+      // キャンセルされた場合は何もしない
+    });
+  } else {
+    // 非対応ブラウザはキャンバス内スポイトにフォールバック
+    showToast('このブラウザは画面全体のスポイトに非対応です（Chrome推奨）。キャンバス内の色を取得します。');
+    setTool('eyedropper');
+  }
+});
 
 document.getElementById('toolFill').addEventListener('click', () => {
   saveHistory();
