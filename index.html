@@ -366,6 +366,46 @@
   #toast.show { opacity: 1; }
   /* Eyedropper cursor */
   body.eyedropper-mode #beadCanvas { cursor: cell; }
+
+  /* 段追加削除ボタン */
+  .canvas-scroll {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .canvas-wrap {
+    flex-shrink: 0;
+  }
+  .row-ctrl-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding-top: 2px;
+    flex-shrink: 0;
+  }
+  .row-ctrl-spacer { flex: 1; }
+  .row-ctrl-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    width: 56px;
+    padding: 7px 4px;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: #faf8f4;
+    color: var(--accent2);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font);
+    line-height: 1.2;
+    text-align: center;
+  }
+  .row-ctrl-btn svg { width: 16px; height: 16px; }
+  .row-ctrl-btn:hover { background: #eef3f8; border-color: var(--accent2); }
+  .row-ctrl-btn.danger { color: var(--accent); }
+  .row-ctrl-btn.danger:hover { background: #fdf0f0; border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -485,7 +525,33 @@
       <span class="info-tag" id="cursorInfo">-</span>
     </div>
     <div class="canvas-scroll" id="canvasScroll">
-      <canvas id="beadCanvas"></canvas>
+      <!-- 段操作ボタン（左側） -->
+      <div class="row-ctrl-col">
+        <button class="row-ctrl-btn" id="addRowTop" title="先頭に1段追加">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>上に追加</span>
+        </button>
+        <div class="row-ctrl-spacer"></div>
+        <button class="row-ctrl-btn danger" id="delRowTop" title="先頭の1段を削除">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>上を削除</span>
+        </button>
+      </div>
+      <div class="canvas-wrap">
+        <canvas id="beadCanvas"></canvas>
+      </div>
+      <!-- 段操作ボタン（右側） -->
+      <div class="row-ctrl-col">
+        <button class="row-ctrl-btn" id="addRowBottom" title="末尾に1段追加">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>下に追加</span>
+        </button>
+        <div class="row-ctrl-spacer"></div>
+        <button class="row-ctrl-btn danger" id="delRowBottom" title="末尾の1段を削除">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>下を削除</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -767,6 +833,42 @@ document.getElementById('toolClear').addEventListener('click', () => {
   drawCanvas();
   showToast('全消ししました');
 });
+
+// =============================================
+// 段の追加・削除
+// =============================================
+function addRow(position) {
+  saveHistory();
+  const emptyRow = Array(cols).fill(null);
+  if (position === 'top') {
+    grid.unshift(emptyRow);
+  } else {
+    grid.push(emptyRow);
+  }
+  rows++;
+  drawCanvas();
+  updateInfo();
+  showToast(position === 'top' ? '先頭に1段追加しました' : '末尾に1段追加しました');
+}
+
+function deleteRow(position) {
+  if (rows <= 1) { showToast('これ以上削除できません'); return; }
+  saveHistory();
+  if (position === 'top') {
+    grid.shift();
+  } else {
+    grid.pop();
+  }
+  rows--;
+  drawCanvas();
+  updateInfo();
+  showToast(position === 'top' ? '先頭の1段を削除しました' : '末尾の1段を削除しました');
+}
+
+document.getElementById('addRowTop').addEventListener('click', () => addRow('top'));
+document.getElementById('addRowBottom').addEventListener('click', () => addRow('bottom'));
+document.getElementById('delRowTop').addEventListener('click', () => deleteRow('top'));
+document.getElementById('delRowBottom').addEventListener('click', () => deleteRow('bottom'));
 
 document.getElementById('toolUndo').addEventListener('click', () => {
   if (history.length === 0) { showToast('これ以上戻れません'); return; }
