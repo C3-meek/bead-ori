@@ -514,6 +514,7 @@
     <h2>💾 図案を保存</h2>
     <label>図案名</label>
     <input type="text" id="savePatternName" placeholder="作品名を入力">
+    <div id="overwriteHint" style="display:none;font-size:11px;color:var(--accent);margin-bottom:8px;">⚠ 同じ名前のまま保存すると上書きされます。別名にすると新規保存になります。</div>
     <div class="modal-actions">
       <button class="modal-btn" id="saveCancelBtn">キャンセル</button>
       <button class="modal-btn primary" id="saveConfirmBtn">保存する</button>
@@ -560,6 +561,8 @@ let history = [];
 let redoStack = [];
 let supabaseClient = null;
 let sbConfig = { url: '', key: '' };
+let currentPatternId = null;
+let currentPatternName = '';
 
 const CELL = 24; // px per bead cell
 const GRID_COLOR = '#c8c4bc';
@@ -573,6 +576,8 @@ function initGrid(c, r) {
   grid = Array.from({ length: r }, () => Array(c).fill(null));
   history = [];
   redoStack = [];
+  currentPatternId = null;
+  currentPatternName = "";
   drawCanvas();
   updateInfo();
 }
@@ -885,7 +890,9 @@ document.getElementById('btnSave').addEventListener('click', () => {
     return;
   }
   openModal('modalSave');
-  document.getElementById('savePatternName').value = '';
+  // 読み込み中の図案があれば名前を引き継ぐ
+  document.getElementById('savePatternName').value = currentPatternName;
+  document.getElementById('overwriteHint').style.display = currentPatternId ? 'block' : 'none';
   document.getElementById('savePatternName').focus();
 });
 
@@ -904,7 +911,18 @@ document.getElementById('saveConfirmBtn').addEventListener('click', async () => 
     updated_at: new Date().toISOString()
   };
 
-  const { error } = await supabaseClient.from('bead_patterns').insert(payload);
+  let error;
+  // 読み込んだ図案を上書き保存
+  if (currentPatternId && document.getElementById('savePatternName').value.trim() === currentPatternName) {
+    ({ error } = await supabaseClient.from('bead_patterns').update(payload).eq('id', currentPatternId));
+    if (!error) currentPatternName = name;
+  } else {
+    // 新規保存
+    const { data, error: insertError } = await supabaseClient.from('bead_patterns').insert(payload).select('id').single();
+    error = insertError;
+    if (!error && data) { currentPatternId = data.id; currentPatternName = name; }
+  }
+
   if (error) {
     showToast('保存エラー: ' + error.message);
   } else {
@@ -954,6 +972,8 @@ document.getElementById('btnLoad').addEventListener('click', async () => {
       document.querySelector(`input[name=orient][value="${orientation}"]`).checked = true;
       grid = JSON.parse(p.grid);
       history = []; redoStack = [];
+      currentPatternId = p.id;
+      currentPatternName = p.name;
       drawCanvas();
       updateInfo();
       closeModal('modalLoad');
