@@ -1111,18 +1111,29 @@ document.getElementById('sbSave').addEventListener('click', () => {
 // EXPORT PNG
 // =============================================
 document.getElementById('btnExport').addEventListener('click', () => {
-  // Render a higher-res version
   const EXPORT_CELL = 24;
+  const MARGIN = 36;   // 両サイドの段番号エリア幅
+
+  const gridW = cols * EXPORT_CELL + 1;
+  const gridH = rows * EXPORT_CELL + 1;
+  const totalW = MARGIN + gridW + MARGIN;
+  const totalH = gridH;
+
   const eCanvas = document.createElement('canvas');
-  eCanvas.width = cols * EXPORT_CELL + 1;
-  eCanvas.height = rows * EXPORT_CELL + 1;
+  eCanvas.width = totalW;
+  eCanvas.height = totalH;
   const ec = eCanvas.getContext('2d');
+
+  // 背景
   ec.fillStyle = '#ffffff';
-  ec.fillRect(0, 0, eCanvas.width, eCanvas.height);
+  ec.fillRect(0, 0, totalW, totalH);
+
+  // ビーズ描画（グリッド分オフセット）
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const x = c * EXPORT_CELL, y = r * EXPORT_CELL;
-      ec.fillStyle = grid[r][c] || '#ffffff';
+      const x = MARGIN + c * EXPORT_CELL;
+      const y = r * EXPORT_CELL;
+      ec.fillStyle = grid[r][c] || '#faf8f4';
       ec.fillRect(x + 1, y + 1, EXPORT_CELL - 1, EXPORT_CELL - 1);
       if (grid[r][c]) {
         ec.fillStyle = 'rgba(255,255,255,0.2)';
@@ -1132,14 +1143,41 @@ document.getElementById('btnExport').addEventListener('click', () => {
       }
     }
   }
-  ec.strokeStyle = '#c8c4bc';
-  ec.lineWidth = 0.5;
+
+  // グリッド線（5マスごとに強調）
   for (let c = 0; c <= cols; c++) {
-    ec.beginPath(); ec.moveTo(c * EXPORT_CELL, 0); ec.lineTo(c * EXPORT_CELL, eCanvas.height); ec.stroke();
+    const isMajor = c % 5 === 0;
+    ec.strokeStyle = isMajor ? '#8899bb' : '#c8c4bc';
+    ec.lineWidth = isMajor ? 1.5 : 0.5;
+    const x = MARGIN + c * EXPORT_CELL;
+    ec.beginPath(); ec.moveTo(x, 0); ec.lineTo(x, gridH); ec.stroke();
   }
   for (let r = 0; r <= rows; r++) {
-    ec.beginPath(); ec.moveTo(0, r * EXPORT_CELL); ec.lineTo(eCanvas.width, r * EXPORT_CELL); ec.stroke();
+    const isMajor = r % 5 === 0;
+    ec.strokeStyle = isMajor ? '#8899bb' : '#c8c4bc';
+    ec.lineWidth = isMajor ? 1.5 : 0.5;
+    const y = r * EXPORT_CELL;
+    ec.beginPath(); ec.moveTo(MARGIN, y); ec.lineTo(MARGIN + gridW - 1, y); ec.stroke();
   }
+
+  // 段番号（下の段が1、上に向かって増える）
+  ec.font = `bold ${EXPORT_CELL * 0.52}px sans-serif`;
+  ec.textAlign = 'center';
+  ec.textBaseline = 'middle';
+  for (let r = 0; r < rows; r++) {
+    const rowNum = rows - r;   // 下段が1
+    const y = r * EXPORT_CELL + EXPORT_CELL / 2;
+
+    // 5の倍数は強調色、それ以外はグレー
+    const isMajor = rowNum % 5 === 0;
+    ec.fillStyle = isMajor ? '#4466aa' : '#888880';
+
+    // 左サイド
+    ec.fillText(String(rowNum), MARGIN / 2, y);
+    // 右サイド
+    ec.fillText(String(rowNum), MARGIN + gridW - 1 + MARGIN / 2, y);
+  }
+
   const link = document.createElement('a');
   link.download = 'bead-pattern.png';
   link.href = eCanvas.toDataURL('image/png');
