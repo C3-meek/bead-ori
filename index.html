@@ -685,20 +685,23 @@ function drawCanvas() {
     }
   }
 
-  // Grid lines - 5マスごとに強調線
+  // Grid lines - 左から5目・下から5段を起点に5マスごと強調線
+  // 縦線：左端(c=0)から右へ、c=5,10,15... に強調
   for (let c = 0; c <= cols; c++) {
-    const isMajor = c % 5 === 0;
-    ctx.strokeStyle = isMajor ? '#8899bb' : GRID_COLOR;
-    ctx.lineWidth = isMajor ? 1.5 : 0.5;
+    const isMajor = c > 0 && c % 5 === 0;
+    ctx.strokeStyle = isMajor ? '#6680bb' : GRID_COLOR;
+    ctx.lineWidth = isMajor ? 2.5 : 0.5;
     ctx.beginPath();
     ctx.moveTo(c * CELL, 0);
     ctx.lineTo(c * CELL, H);
     ctx.stroke();
   }
+  // 横線：下端(r=rows)から上へ、下からの距離が5,10,15... の位置に強調
   for (let r = 0; r <= rows; r++) {
-    const isMajor = r % 5 === 0;
-    ctx.strokeStyle = isMajor ? '#8899bb' : GRID_COLOR;
-    ctx.lineWidth = isMajor ? 1.5 : 0.5;
+    const fromBottom = rows - r;  // 下端からの距離
+    const isMajor = fromBottom > 0 && fromBottom % 5 === 0;
+    ctx.strokeStyle = isMajor ? '#6680bb' : GRID_COLOR;
+    ctx.lineWidth = isMajor ? 2.5 : 0.5;
     ctx.beginPath();
     ctx.moveTo(0, r * CELL);
     ctx.lineTo(W, r * CELL);
@@ -1144,18 +1147,19 @@ document.getElementById('btnExport').addEventListener('click', () => {
     }
   }
 
-  // グリッド線（5マスごとに強調）
+  // グリッド線（左から5目・下から5段起点で強調）
   for (let c = 0; c <= cols; c++) {
-    const isMajor = c % 5 === 0;
-    ec.strokeStyle = isMajor ? '#8899bb' : '#c8c4bc';
-    ec.lineWidth = isMajor ? 1.5 : 0.5;
+    const isMajor = c > 0 && c % 5 === 0;
+    ec.strokeStyle = isMajor ? '#6680bb' : '#c8c4bc';
+    ec.lineWidth = isMajor ? 2.5 : 0.5;
     const x = MARGIN + c * EXPORT_CELL;
     ec.beginPath(); ec.moveTo(x, 0); ec.lineTo(x, gridH); ec.stroke();
   }
   for (let r = 0; r <= rows; r++) {
-    const isMajor = r % 5 === 0;
-    ec.strokeStyle = isMajor ? '#8899bb' : '#c8c4bc';
-    ec.lineWidth = isMajor ? 1.5 : 0.5;
+    const fromBottom = rows - r;
+    const isMajor = fromBottom > 0 && fromBottom % 5 === 0;
+    ec.strokeStyle = isMajor ? '#6680bb' : '#c8c4bc';
+    ec.lineWidth = isMajor ? 2.5 : 0.5;
     const y = r * EXPORT_CELL;
     ec.beginPath(); ec.moveTo(MARGIN, y); ec.lineTo(MARGIN + gridW - 1, y); ec.stroke();
   }
