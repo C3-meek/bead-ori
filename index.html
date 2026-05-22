@@ -747,23 +747,35 @@ function drawCanvas() {
     }
   }
 
-  // Grid lines - 左から5目・下から5段を起点に5マスごと強調線
-  // 縦線：左端(c=0)から右へ、c=5,10,15... に強調
+  // Grid lines - 通常線を先に全描画し、強調線を後から上書きして隠れないようにする
+  // ---- 通常線（縦） ----
+  ctx.strokeStyle = GRID_COLOR;
+  ctx.lineWidth = 0.5;
   for (let c = 0; c <= cols; c++) {
-    const isMajor = c > 0 && c % 5 === 0;
-    ctx.strokeStyle = isMajor ? '#6680bb' : GRID_COLOR;
-    ctx.lineWidth = isMajor ? 2.5 : 0.5;
     ctx.beginPath();
     ctx.moveTo(c * CELL, 0);
     ctx.lineTo(c * CELL, H);
     ctx.stroke();
   }
-  // 横線：下端(r=rows)から上へ、下からの距離が5,10,15... の位置に強調
+  // ---- 通常線（横） ----
   for (let r = 0; r <= rows; r++) {
-    const fromBottom = rows - r;  // 下端からの距離
-    const isMajor = fromBottom > 0 && fromBottom % 5 === 0;
-    ctx.strokeStyle = isMajor ? '#6680bb' : GRID_COLOR;
-    ctx.lineWidth = isMajor ? 2.5 : 0.5;
+    ctx.beginPath();
+    ctx.moveTo(0, r * CELL);
+    ctx.lineTo(W, r * CELL);
+    ctx.stroke();
+  }
+  // ---- 強調線（縦）：左から5目ごと ----
+  ctx.strokeStyle = '#6680bb';
+  ctx.lineWidth = 2.5;
+  for (let c = 5; c <= cols; c += 5) {
+    ctx.beginPath();
+    ctx.moveTo(c * CELL, 0);
+    ctx.lineTo(c * CELL, H);
+    ctx.stroke();
+  }
+  // ---- 強調線（横）：下から5段ごと ----
+  for (let fromBottom = 5; fromBottom <= rows; fromBottom += 5) {
+    const r = rows - fromBottom;
     ctx.beginPath();
     ctx.moveTo(0, r * CELL);
     ctx.lineTo(W, r * CELL);
@@ -1244,20 +1256,29 @@ document.getElementById('btnExport').addEventListener('click', () => {
     }
   }
 
-  // グリッド線（左から5目・下から5段起点で強調）
+  // グリッド線 - 通常線を先に全描画、強調線を後から上書き
+  // ---- 通常線（縦） ----
+  ec.strokeStyle = '#c8c4bc';
+  ec.lineWidth = 0.5;
   for (let c = 0; c <= cols; c++) {
-    const isMajor = c > 0 && c % 5 === 0;
-    ec.strokeStyle = isMajor ? '#6680bb' : '#c8c4bc';
-    ec.lineWidth = isMajor ? 2.5 : 0.5;
     const x = MARGIN + c * EXPORT_CELL;
     ec.beginPath(); ec.moveTo(x, 0); ec.lineTo(x, gridH); ec.stroke();
   }
+  // ---- 通常線（横） ----
   for (let r = 0; r <= rows; r++) {
-    const fromBottom = rows - r;
-    const isMajor = fromBottom > 0 && fromBottom % 5 === 0;
-    ec.strokeStyle = isMajor ? '#6680bb' : '#c8c4bc';
-    ec.lineWidth = isMajor ? 2.5 : 0.5;
     const y = r * EXPORT_CELL;
+    ec.beginPath(); ec.moveTo(MARGIN, y); ec.lineTo(MARGIN + gridW - 1, y); ec.stroke();
+  }
+  // ---- 強調線（縦）：左から5目ごと ----
+  ec.strokeStyle = '#6680bb';
+  ec.lineWidth = 2.5;
+  for (let c = 5; c <= cols; c += 5) {
+    const x = MARGIN + c * EXPORT_CELL;
+    ec.beginPath(); ec.moveTo(x, 0); ec.lineTo(x, gridH); ec.stroke();
+  }
+  // ---- 強調線（横）：下から5段ごと ----
+  for (let fromBottom = 5; fromBottom <= rows; fromBottom += 5) {
+    const y = (rows - fromBottom) * EXPORT_CELL;
     ec.beginPath(); ec.moveTo(MARGIN, y); ec.lineTo(MARGIN + gridW - 1, y); ec.stroke();
   }
 
