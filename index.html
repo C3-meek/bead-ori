@@ -406,6 +406,41 @@
   .row-ctrl-btn:hover { background: #eef3f8; border-color: var(--accent2); }
   .row-ctrl-btn.danger { color: var(--accent); }
   .row-ctrl-btn.danger:hover { background: #fdf0f0; border-color: var(--accent); }
+
+  /* 目追加削除ボタン（上下） */
+  .canvas-center-col {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .col-ctrl-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+  }
+  .col-ctrl-spacer { width: 8px; flex-shrink: 0; }
+  .col-ctrl-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 3px;
+    padding: 5px 8px;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: #faf8f4;
+    color: var(--accent2);
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--font);
+    white-space: nowrap;
+  }
+  .col-ctrl-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .col-ctrl-btn:hover { background: #eef3f8; border-color: var(--accent2); }
+  .col-ctrl-btn.danger { color: var(--accent); }
+  .col-ctrl-btn.danger:hover { background: #fdf0f0; border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -537,9 +572,36 @@
           <span>上を削除</span>
         </button>
       </div>
-      <div class="canvas-wrap">
-        <canvas id="beadCanvas"></canvas>
+
+      <!-- 中央：目操作ボタン（上）＋ キャンバス ＋ 目操作ボタン（下） -->
+      <div class="canvas-center-col">
+        <!-- 目操作ボタン（上段） -->
+        <div class="col-ctrl-row">
+          <button class="col-ctrl-btn danger" id="delColLeft" title="左端の1目を削除">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            左削除
+          </button>
+          <div class="col-ctrl-spacer"></div>
+          <button class="col-ctrl-btn" id="addColLeft" title="左に1目追加">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            左追加
+          </button>
+          <div style="flex:1"></div>
+          <button class="col-ctrl-btn" id="addColRight" title="右に1目追加">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            右追加
+          </button>
+          <div class="col-ctrl-spacer"></div>
+          <button class="col-ctrl-btn danger" id="delColRight" title="右端の1目を削除">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            右削除
+          </button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="beadCanvas"></canvas>
+        </div>
       </div>
+
       <!-- 段操作ボタン（右側） -->
       <div class="row-ctrl-col">
         <button class="row-ctrl-btn" id="addRowBottom" title="末尾に1段追加">
@@ -867,6 +929,41 @@ function deleteRow(position) {
   updateInfo();
   showToast(position === 'top' ? '先頭の1段を削除しました' : '末尾の1段を削除しました');
 }
+
+// =============================================
+// 目（列）の追加・削除
+// =============================================
+function addCol(position) {
+  saveHistory();
+  if (position === 'left') {
+    grid = grid.map(row => [null, ...row]);
+  } else {
+    grid = grid.map(row => [...row, null]);
+  }
+  cols++;
+  drawCanvas();
+  updateInfo();
+  showToast(position === 'left' ? '左に1目追加しました' : '右に1目追加しました');
+}
+
+function deleteCol(position) {
+  if (cols <= 1) { showToast('これ以上削除できません'); return; }
+  saveHistory();
+  if (position === 'left') {
+    grid = grid.map(row => row.slice(1));
+  } else {
+    grid = grid.map(row => row.slice(0, -1));
+  }
+  cols--;
+  drawCanvas();
+  updateInfo();
+  showToast(position === 'left' ? '左端の1目を削除しました' : '右端の1目を削除しました');
+}
+
+document.getElementById('addColLeft').addEventListener('click', () => addCol('left'));
+document.getElementById('addColRight').addEventListener('click', () => addCol('right'));
+document.getElementById('delColLeft').addEventListener('click', () => deleteCol('left'));
+document.getElementById('delColRight').addEventListener('click', () => deleteCol('right'));
 
 document.getElementById('addRowTop').addEventListener('click', () => addRow('top'));
 document.getElementById('addRowBottom').addEventListener('click', () => addRow('bottom'));
