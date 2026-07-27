@@ -40,11 +40,7 @@
     gap: 16px;
     box-shadow: var(--shadow);
   }
-  header h1 {
-    font-size: 18px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-  }
+  header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.05em; }
   header .step-badge {
     background: var(--accent);
     color: #fff;
@@ -85,7 +81,6 @@
     text-transform: uppercase;
     margin-bottom: 8px;
   }
-  /* Canvas size */
   .size-row {
     display: flex;
     align-items: center;
@@ -102,55 +97,45 @@
     cursor: pointer;
     color: var(--text);
   }
-  /* Orientation */
-  .orient-row {
+  /* セル形状選択 */
+  .cell-shape-row {
+    display: flex;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .shape-btn {
+    flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
-  }
-  .orient-option {
-    display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
+    padding: 6px 4px;
+    border-radius: var(--radius);
+    border: 1.5px solid var(--border);
+    background: #faf8f4;
     cursor: pointer;
-    font-size: 13px;
+    font-size: 10px;
+    color: var(--muted);
+    transition: all 0.15s;
+    font-family: var(--font);
   }
-  .orient-option input[type=radio] { accent-color: var(--accent); }
-  .orient-preview {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-  }
-  .orient-thumb {
-    border: 2px solid var(--border);
-    border-radius: 4px;
+  .shape-btn:hover { border-color: var(--accent2); color: var(--accent2); background: #eef3f8; }
+  .shape-btn.active { border-color: var(--accent); background: #fdf0f0; color: var(--accent); }
+  .shape-preview {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 10px;
-    color: var(--muted);
-    background: #f4f2ee;
-    cursor: pointer;
-    transition: border-color 0.15s;
-    position: relative;
+    width: 32px;
+    height: 24px;
   }
-  .orient-thumb.active { border-color: var(--accent); background: #fdf0f0; }
-  .orient-thumb .thumb-grid {
-    display: grid;
-    gap: 1px;
-  }
-  .thumb-cell {
-    width: 6px;
-    height: 6px;
-    background: #c8c4bc;
-    border-radius: 1px;
-  }
+  .shape-preview rect { fill: #c8c4bc; }
+  .shape-btn.active .shape-preview rect { fill: var(--accent); }
+  /* Orientation */
+  .orient-row { display: flex; flex-direction: column; gap: 6px; }
+  .orient-option { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+  .orient-option input[type=radio] { accent-color: var(--accent); }
   /* Tool buttons */
-  .tool-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
+  .tool-group { display: flex; flex-wrap: wrap; gap: 6px; }
   .tool-btn {
     display: flex;
     flex-direction: column;
@@ -189,34 +174,10 @@
   }
   .palette-cell:hover { transform: scale(1.2); z-index: 1; }
   .palette-cell.selected { border: 2.5px solid var(--text); box-shadow: 0 0 0 1px #fff inset; }
-  .current-color-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-  }
-  .current-swatch {
-    width: 28px;
-    height: 28px;
-    border-radius: 5px;
-    border: 1.5px solid var(--border);
-    flex-shrink: 0;
-  }
-  .custom-color-label {
-    font-size: 11px;
-    color: var(--muted);
-    flex: 1;
-  }
-  #colorPickerInput {
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    border: none;
-    background: none;
-    cursor: pointer;
-    border-radius: 4px;
-    overflow: hidden;
-  }
+  .current-color-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .current-swatch { width: 28px; height: 28px; border-radius: 5px; border: 1.5px solid var(--border); flex-shrink: 0; }
+  .custom-color-label { font-size: 11px; color: var(--muted); flex: 1; }
+  #colorPickerInput { width: 28px; height: 28px; padding: 0; border: none; background: none; cursor: pointer; border-radius: 4px; overflow: hidden; }
   /* File actions */
   .action-btn {
     display: flex;
@@ -239,13 +200,7 @@
   .action-btn.primary:hover { background: #b05555; }
   .action-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
   /* ---- MAIN CANVAS AREA ---- */
-  .canvas-area {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--bg);
-  }
+  .canvas-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
   .canvas-toolbar {
     background: var(--panel);
     border-bottom: 1px solid var(--border);
@@ -270,6 +225,7 @@
     align-items: flex-start;
     justify-content: flex-start;
     padding: 24px;
+    gap: 10px;
   }
   #beadCanvas {
     cursor: crosshair;
@@ -327,7 +283,6 @@
   .modal-btn:hover { background: #eee; }
   .modal-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   .modal-btn.primary:hover { background: #b05555; }
-  /* Patterns list */
   .pattern-list {
     max-height: 220px;
     overflow-y: auto;
@@ -348,7 +303,6 @@
   .pattern-item:last-child { border-bottom: none; }
   .pattern-item:hover { background: #f4f2ee; }
   .pattern-item .meta { font-size: 11px; color: var(--muted); }
-  /* Toast */
   #toast {
     position: fixed;
     bottom: 24px;
@@ -364,17 +318,10 @@
     z-index: 200;
   }
   #toast.show { opacity: 1; }
-  /* Eyedropper cursor */
   body.eyedropper-mode #beadCanvas { cursor: cell; }
 
-  /* 段追加削除ボタン */
-  .canvas-scroll {
-    align-items: flex-start;
-    gap: 10px;
-  }
-  .canvas-wrap {
-    flex-shrink: 0;
-  }
+  /* 段操作ボタン */
+  .canvas-wrap { flex-shrink: 0; }
   .row-ctrl-col {
     display: flex;
     flex-direction: column;
@@ -407,19 +354,9 @@
   .row-ctrl-btn.danger { color: var(--accent); }
   .row-ctrl-btn.danger:hover { background: #fdf0f0; border-color: var(--accent); }
 
-  /* 目追加削除ボタン（上下） */
-  .canvas-center-col {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  .col-ctrl-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-  }
+  /* 目操作ボタン */
+  .canvas-center-col { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .col-ctrl-row { display: flex; flex-direction: row; align-items: center; gap: 4px; }
   .col-ctrl-spacer { width: 8px; flex-shrink: 0; }
   .col-ctrl-btn {
     display: flex;
@@ -452,7 +389,6 @@
 </header>
 
 <div class="app-body">
-  <!-- SIDEBAR -->
   <div class="sidebar">
 
     <!-- Canvas size -->
@@ -468,6 +404,29 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
         適用
       </button>
+
+      <!-- セル形状 -->
+      <div class="section-title" style="margin-top:10px">マスの形</div>
+      <div class="cell-shape-row">
+        <button class="shape-btn active" id="shapeSquare" title="正方形">
+          <div class="shape-preview">
+            <svg width="20" height="20" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1"/></svg>
+          </div>
+          正方形
+        </button>
+        <button class="shape-btn" id="shapeTall" title="タテ長">
+          <div class="shape-preview">
+            <svg width="14" height="20" viewBox="0 0 14 20"><rect x="1" y="1" width="12" height="18" rx="1"/></svg>
+          </div>
+          タテ長
+        </button>
+        <button class="shape-btn" id="shapeWide" title="ヨコ長">
+          <div class="shape-preview">
+            <svg width="20" height="14" viewBox="0 0 20 14"><rect x="1" y="1" width="18" height="12" rx="1"/></svg>
+          </div>
+          ヨコ長
+        </button>
+      </div>
     </div>
 
     <!-- Orientation -->
@@ -557,6 +516,7 @@
     <div class="canvas-toolbar">
       <span class="info-tag" id="canvasInfo">4目 × 4段 ／ タテ向き</span>
       <span class="info-tag" id="toolInfo">ペンツール</span>
+      <span class="info-tag" id="shapeInfo">正方形</span>
       <span class="info-tag" id="cursorInfo">-</span>
     </div>
     <div class="canvas-scroll" id="canvasScroll">
@@ -573,9 +533,8 @@
         </button>
       </div>
 
-      <!-- 中央：目操作ボタン（上）＋ キャンバス ＋ 目操作ボタン（下） -->
+      <!-- 中央：目操作ボタン＋キャンバス -->
       <div class="canvas-center-col">
-        <!-- 目操作ボタン（上段） -->
         <div class="col-ctrl-row">
           <button class="col-ctrl-btn danger" id="delColLeft" title="左端の1目を削除">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -692,7 +651,18 @@ let sbConfig = { url: '', key: '' };
 let currentPatternId = null;
 let currentPatternName = '';
 
-const CELL = 24; // px per bead cell
+// セル形状：'square'=正方形, 'tall'=タテ長(横24 縦36), 'wide'=ヨコ長(横36 縦24)
+let cellShape = 'square';
+
+// セル幅・高さをshapeから計算
+function getCellSize() {
+  switch (cellShape) {
+    case 'tall':  return { cw: 18, ch: 28 };
+    case 'wide':  return { cw: 28, ch: 18 };
+    default:      return { cw: 24, ch: 24 };
+  }
+}
+
 const GRID_COLOR = '#c8c4bc';
 const CELL_EMPTY = '#faf8f4';
 
@@ -705,13 +675,15 @@ function initGrid(c, r) {
   history = [];
   redoStack = [];
   currentPatternId = null;
-  currentPatternName = "";
+  currentPatternName = '';
   drawCanvas();
   updateInfo();
 }
 
 function updateInfo() {
+  const shapeLabel = { square:'正方形', tall:'タテ長', wide:'ヨコ長' }[cellShape];
   document.getElementById('canvasInfo').textContent = `${cols}目 × ${rows}段 ／ ${orientation === 'tate' ? 'タテ向き' : 'ヨコ向き'}`;
+  document.getElementById('shapeInfo').textContent = shapeLabel;
 }
 
 // =============================================
@@ -721,76 +693,63 @@ const canvas = document.getElementById('beadCanvas');
 const ctx = canvas.getContext('2d');
 
 function drawCanvas() {
-  const W = cols * CELL + 1;
-  const H = rows * CELL + 1;
+  const { cw, ch } = getCellSize();
+  const W = cols * cw + 1;
+  const H = rows * ch + 1;
   canvas.width = W;
   canvas.height = H;
 
   ctx.clearRect(0, 0, W, H);
 
+  // ビーズ描画
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const x = c * CELL;
-      const y = r * CELL;
+      const x = c * cw;
+      const y = r * ch;
       const color = grid[r][c];
-      // Draw bead
       ctx.fillStyle = color || CELL_EMPTY;
-      ctx.fillRect(x + 1, y + 1, CELL - 1, CELL - 1);
-
-      // Bead highlight (top-left lighter)
+      ctx.fillRect(x + 1, y + 1, cw - 1, ch - 1);
       if (color) {
         ctx.fillStyle = 'rgba(255,255,255,0.22)';
         ctx.beginPath();
-        ctx.ellipse(x + CELL * 0.32, y + CELL * 0.32, CELL * 0.22, CELL * 0.16, -0.4, 0, Math.PI * 2);
+        ctx.ellipse(x + cw * 0.32, y + ch * 0.32, cw * 0.22, ch * 0.16, -0.4, 0, Math.PI * 2);
         ctx.fill();
       }
     }
   }
 
-  // Grid lines - 通常線を先に全描画し、強調線を後から上書きして隠れないようにする
-  // ---- 通常線（縦） ----
+  // 通常グリッド線（縦）
   ctx.strokeStyle = GRID_COLOR;
   ctx.lineWidth = 0.5;
   for (let c = 0; c <= cols; c++) {
-    ctx.beginPath();
-    ctx.moveTo(c * CELL, 0);
-    ctx.lineTo(c * CELL, H);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, H); ctx.stroke();
   }
-  // ---- 通常線（横） ----
+  // 通常グリッド線（横）
   for (let r = 0; r <= rows; r++) {
-    ctx.beginPath();
-    ctx.moveTo(0, r * CELL);
-    ctx.lineTo(W, r * CELL);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, r * ch); ctx.lineTo(W, r * ch); ctx.stroke();
   }
-  // ---- 強調線（縦）：左から5目ごと ----
+  // 強調線（縦）：左から5目ごと
   ctx.strokeStyle = '#6680bb';
   ctx.lineWidth = 2.5;
   for (let c = 5; c <= cols; c += 5) {
-    ctx.beginPath();
-    ctx.moveTo(c * CELL, 0);
-    ctx.lineTo(c * CELL, H);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, H); ctx.stroke();
   }
-  // ---- 強調線（横）：下から5段ごと ----
-  for (let fromBottom = 5; fromBottom <= rows; fromBottom += 5) {
-    const r = rows - fromBottom;
-    ctx.beginPath();
-    ctx.moveTo(0, r * CELL);
-    ctx.lineTo(W, r * CELL);
-    ctx.stroke();
+  // 強調線（横）：下から5段ごと
+  for (let fb = 5; fb <= rows; fb += 5) {
+    const r = rows - fb;
+    ctx.beginPath(); ctx.moveTo(0, r * ch); ctx.lineTo(W, r * ch); ctx.stroke();
   }
 }
 
 function getCellAt(e) {
+  const { cw, ch } = getCellSize();
   const rect = canvas.getBoundingClientRect();
   const scaleX = canvas.width / rect.width;
   const scaleY = canvas.height / rect.height;
   const x = (e.clientX - rect.left) * scaleX;
   const y = (e.clientY - rect.top) * scaleY;
-  const c = Math.floor(x / CELL);
-  const r = Math.floor(y / CELL);
+  const c = Math.floor(x / cw);
+  const r = Math.floor(y / ch);
   if (c < 0 || c >= cols || r < 0 || r >= rows) return null;
   return { c, r };
 }
@@ -814,23 +773,33 @@ function saveHistory() {
 }
 
 // =============================================
+// CELL SHAPE
+// =============================================
+function setCellShape(shape) {
+  cellShape = shape;
+  document.getElementById('shapeSquare').classList.toggle('active', shape === 'square');
+  document.getElementById('shapeTall').classList.toggle('active', shape === 'tall');
+  document.getElementById('shapeWide').classList.toggle('active', shape === 'wide');
+  drawCanvas();
+  updateInfo();
+}
+
+document.getElementById('shapeSquare').addEventListener('click', () => setCellShape('square'));
+document.getElementById('shapeTall').addEventListener('click', () => setCellShape('tall'));
+document.getElementById('shapeWide').addEventListener('click', () => setCellShape('wide'));
+
+// =============================================
 // MOUSE EVENTS
 // =============================================
 canvas.addEventListener('mousedown', e => {
   if (e.button !== 0) return;
   const cell = getCellAt(e);
   if (!cell) return;
-
   if (currentTool === 'eyedropper') {
     const picked = grid[cell.r][cell.c];
-    if (picked) {
-      setCurrentColor(picked);
-      setTool('pen');
-      showToast('色を取得しました：' + picked);
-    }
+    if (picked) { setCurrentColor(picked); setTool('pen'); showToast('色を取得しました：' + picked); }
     return;
   }
-
   saveHistory();
   isDrawing = true;
   applyPen(cell);
@@ -839,9 +808,7 @@ canvas.addEventListener('mousedown', e => {
 
 canvas.addEventListener('mousemove', e => {
   const cell = getCellAt(e);
-  if (cell) {
-    document.getElementById('cursorInfo').textContent = `(${cell.c + 1}目, ${cell.r + 1}段)`;
-  }
+  if (cell) document.getElementById('cursorInfo').textContent = `(${cell.c + 1}目, ${cell.r + 1}段)`;
   if (!isDrawing) return;
   applyPen(cell);
   drawCanvas();
@@ -850,16 +817,15 @@ canvas.addEventListener('mousemove', e => {
 canvas.addEventListener('mouseup', () => { isDrawing = false; });
 canvas.addEventListener('mouseleave', () => { isDrawing = false; });
 
-// Touch support
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
-  const touch = e.touches[0];
-  canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY, button: 0 }));
+  const t = e.touches[0];
+  canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: t.clientX, clientY: t.clientY, button: 0 }));
 }, { passive: false });
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
-  const touch = e.touches[0];
-  canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: touch.clientX, clientY: touch.clientY }));
+  const t = e.touches[0];
+  canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: t.clientX, clientY: t.clientY }));
 }, { passive: false });
 canvas.addEventListener('touchend', () => canvas.dispatchEvent(new MouseEvent('mouseup')));
 
@@ -879,18 +845,12 @@ function setTool(name) {
 document.getElementById('toolPen').addEventListener('click', () => setTool('pen'));
 document.getElementById('toolEraser').addEventListener('click', () => setTool('eraser'));
 document.getElementById('toolEyedropper').addEventListener('click', () => {
-  // EyeDropper API が使える場合は画面全体から色取得
   if (window.EyeDropper) {
-    const eyeDropper = new EyeDropper();
-    eyeDropper.open().then(result => {
-      setCurrentColor(result.sRGBHex);
-      setTool('pen');
-      showToast('色を取得しました：' + result.sRGBHex);
-    }).catch(() => {
-      // キャンセルされた場合は何もしない
-    });
+    new EyeDropper().open().then(r => {
+      setCurrentColor(r.sRGBHex); setTool('pen');
+      showToast('色を取得しました：' + r.sRGBHex);
+    }).catch(() => {});
   } else {
-    // 非対応ブラウザはキャンバス内スポイトにフォールバック
     showToast('このブラウザは画面全体のスポイトに非対応です（Chrome推奨）。キャンバス内の色を取得します。');
     setTool('eyedropper');
   }
@@ -917,28 +877,18 @@ document.getElementById('toolClear').addEventListener('click', () => {
 function addRow(position) {
   saveHistory();
   const emptyRow = Array(cols).fill(null);
-  if (position === 'top') {
-    grid.unshift(emptyRow);
-  } else {
-    grid.push(emptyRow);
-  }
+  if (position === 'top') grid.unshift(emptyRow); else grid.push(emptyRow);
   rows++;
-  drawCanvas();
-  updateInfo();
+  drawCanvas(); updateInfo();
   showToast(position === 'top' ? '先頭に1段追加しました' : '末尾に1段追加しました');
 }
 
 function deleteRow(position) {
   if (rows <= 1) { showToast('これ以上削除できません'); return; }
   saveHistory();
-  if (position === 'top') {
-    grid.shift();
-  } else {
-    grid.pop();
-  }
+  if (position === 'top') grid.shift(); else grid.pop();
   rows--;
-  drawCanvas();
-  updateInfo();
+  drawCanvas(); updateInfo();
   showToast(position === 'top' ? '先頭の1段を削除しました' : '末尾の1段を削除しました');
 }
 
@@ -947,28 +897,20 @@ function deleteRow(position) {
 // =============================================
 function addCol(position) {
   saveHistory();
-  if (position === 'left') {
-    grid = grid.map(row => [null, ...row]);
-  } else {
-    grid = grid.map(row => [...row, null]);
-  }
+  if (position === 'left') grid = grid.map(row => [null, ...row]);
+  else grid = grid.map(row => [...row, null]);
   cols++;
-  drawCanvas();
-  updateInfo();
+  drawCanvas(); updateInfo();
   showToast(position === 'left' ? '左に1目追加しました' : '右に1目追加しました');
 }
 
 function deleteCol(position) {
   if (cols <= 1) { showToast('これ以上削除できません'); return; }
   saveHistory();
-  if (position === 'left') {
-    grid = grid.map(row => row.slice(1));
-  } else {
-    grid = grid.map(row => row.slice(0, -1));
-  }
+  if (position === 'left') grid = grid.map(row => row.slice(1));
+  else grid = grid.map(row => row.slice(0, -1));
   cols--;
-  drawCanvas();
-  updateInfo();
+  drawCanvas(); updateInfo();
   showToast(position === 'left' ? '左端の1目を削除しました' : '右端の1目を削除しました');
 }
 
@@ -976,7 +918,6 @@ document.getElementById('addColLeft').addEventListener('click', () => addCol('le
 document.getElementById('addColRight').addEventListener('click', () => addCol('right'));
 document.getElementById('delColLeft').addEventListener('click', () => deleteCol('left'));
 document.getElementById('delColRight').addEventListener('click', () => deleteCol('right'));
-
 document.getElementById('addRowTop').addEventListener('click', () => addRow('top'));
 document.getElementById('addRowBottom').addEventListener('click', () => addRow('bottom'));
 document.getElementById('delRowTop').addEventListener('click', () => deleteRow('top'));
@@ -986,14 +927,17 @@ document.getElementById('toolUndo').addEventListener('click', () => {
   if (history.length === 0) { showToast('これ以上戻れません'); return; }
   redoStack.push(grid.map(row => [...row]));
   grid = history.pop();
-  drawCanvas();
+  // rowsとcolsをgridから再計算
+  rows = grid.length; cols = grid[0]?.length || cols;
+  drawCanvas(); updateInfo();
 });
 
 document.getElementById('toolRedo').addEventListener('click', () => {
   if (redoStack.length === 0) { showToast('これ以上やり直せません'); return; }
   history.push(grid.map(row => [...row]));
   grid = redoStack.pop();
-  drawCanvas();
+  rows = grid.length; cols = grid[0]?.length || cols;
+  drawCanvas(); updateInfo();
 });
 
 // =============================================
@@ -1033,9 +977,7 @@ function rgbToHex(color) {
   return '#' + m.slice(0,3).map(n => parseInt(n).toString(16).padStart(2,'0')).join('');
 }
 
-document.getElementById('colorPickerInput').addEventListener('input', e => {
-  setCurrentColor(e.target.value);
-});
+document.getElementById('colorPickerInput').addEventListener('input', e => setCurrentColor(e.target.value));
 
 // =============================================
 // CANVAS SIZE & ORIENTATION
@@ -1044,11 +986,9 @@ function buildSelects() {
   const colsSel = document.getElementById('colsSelect');
   const rowsSel = document.getElementById('rowsSelect');
   for (let i = 2; i <= 40; i++) {
-    const o1 = new Option(i, i);
-    const o2 = new Option(i, i);
+    const o1 = new Option(i, i); const o2 = new Option(i, i);
     if (i === 4) { o1.selected = true; o2.selected = true; }
-    colsSel.appendChild(o1);
-    rowsSel.appendChild(o2);
+    colsSel.appendChild(o1); rowsSel.appendChild(o2);
   }
 }
 
@@ -1062,53 +1002,32 @@ document.getElementById('applySize').addEventListener('click', () => {
 });
 
 document.querySelectorAll('input[name=orient]').forEach(r => {
-  r.addEventListener('change', e => {
-    orientation = e.target.value;
-    updateInfo();
-  });
+  r.addEventListener('change', e => { orientation = e.target.value; updateInfo(); });
 });
 
 // =============================================
 // SUPABASE
 // =============================================
 function loadSbConfig() {
-  try {
-    const saved = localStorage.getItem('bead_sb_config');
-    if (saved) sbConfig = JSON.parse(saved);
-  } catch {}
+  try { const s = localStorage.getItem('bead_sb_config'); if (s) sbConfig = JSON.parse(s); } catch {}
 }
 
 function initSupabase() {
   if (!sbConfig.url || !sbConfig.key) return false;
-  try {
-    supabaseClient = window.supabase.createClient(sbConfig.url, sbConfig.key);
-    return true;
-  } catch (e) {
-    showToast('Supabase 接続エラー: ' + e.message);
-    return false;
-  }
+  try { supabaseClient = window.supabase.createClient(sbConfig.url, sbConfig.key); return true; }
+  catch (e) { showToast('Supabase 接続エラー: ' + e.message); return false; }
 }
 
 async function ensureTable() {
   if (!supabaseClient) return false;
-  // テーブルが存在するかチェック（read試行）
   const { error } = await supabaseClient.from('bead_patterns').select('id').limit(1);
-  if (error && error.code === '42P01') {
-    showToast('テーブルが見つかりません。Supabaseで "bead_patterns" テーブルを作成してください。');
-    return false;
-  }
+  if (error && error.code === '42P01') { showToast('テーブルが見つかりません。'); return false; }
   return true;
 }
 
-// Save
 document.getElementById('btnSave').addEventListener('click', () => {
-  if (!sbConfig.url || !sbConfig.key) {
-    showToast('Supabase 設定を先に入力してください');
-    openModal('modalSupabase');
-    return;
-  }
+  if (!sbConfig.url || !sbConfig.key) { showToast('Supabase 設定を先に入力してください'); openModal('modalSupabase'); return; }
   openModal('modalSave');
-  // 読み込み中の図案があれば名前を引き継ぐ
   document.getElementById('savePatternName').value = currentPatternName;
   document.getElementById('overwriteHint').style.display = currentPatternId ? 'block' : 'none';
   document.getElementById('savePatternName').focus();
@@ -1119,64 +1038,30 @@ document.getElementById('saveConfirmBtn').addEventListener('click', async () => 
   if (!name) { showToast('図案名を入力してください'); return; }
   if (!initSupabase()) return;
   if (!await ensureTable()) return;
-
-  const payload = {
-    name,
-    cols,
-    rows,
-    orientation,
-    grid: JSON.stringify(grid),
-    updated_at: new Date().toISOString()
-  };
-
+  const payload = { name, cols, rows, orientation, grid: JSON.stringify(grid), updated_at: new Date().toISOString() };
   let error;
-  // 読み込んだ図案を上書き保存
   if (currentPatternId && document.getElementById('savePatternName').value.trim() === currentPatternName) {
     ({ error } = await supabaseClient.from('bead_patterns').update(payload).eq('id', currentPatternId));
     if (!error) currentPatternName = name;
   } else {
-    // 新規保存
-    const { data, error: insertError } = await supabaseClient.from('bead_patterns').insert(payload).select('id').single();
-    error = insertError;
+    const { data, error: ie } = await supabaseClient.from('bead_patterns').insert(payload).select('id').single();
+    error = ie;
     if (!error && data) { currentPatternId = data.id; currentPatternName = name; }
   }
-
-  if (error) {
-    showToast('保存エラー: ' + error.message);
-  } else {
-    showToast(`「${name}」を保存しました`);
-    closeModal('modalSave');
-  }
+  if (error) showToast('保存エラー: ' + error.message);
+  else { showToast(`「${name}」を保存しました`); closeModal('modalSave'); }
 });
 
 document.getElementById('saveCancelBtn').addEventListener('click', () => closeModal('modalSave'));
 
-// Load
 document.getElementById('btnLoad').addEventListener('click', async () => {
-  if (!sbConfig.url || !sbConfig.key) {
-    showToast('Supabase 設定を先に入力してください');
-    openModal('modalSupabase');
-    return;
-  }
+  if (!sbConfig.url || !sbConfig.key) { showToast('Supabase 設定を先に入力してください'); openModal('modalSupabase'); return; }
   if (!initSupabase()) return;
   openModal('modalLoad');
   document.getElementById('patternList').innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">読み込み中...</div>';
-
-  const { data, error } = await supabaseClient
-    .from('bead_patterns')
-    .select('id, name, cols, rows, orientation, grid, updated_at')
-    .order('updated_at', { ascending: false });
-
-  if (error) {
-    document.getElementById('patternList').innerHTML = `<div style="padding:16px;color:var(--muted);font-size:13px;">エラー: ${error.message}</div>`;
-    return;
-  }
-
-  if (!data || data.length === 0) {
-    document.getElementById('patternList').innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">保存された図案がありません</div>';
-    return;
-  }
-
+  const { data, error } = await supabaseClient.from('bead_patterns').select('id,name,cols,rows,orientation,grid,updated_at').order('updated_at', { ascending: false });
+  if (error) { document.getElementById('patternList').innerHTML = `<div style="padding:16px;color:var(--muted);font-size:13px;">エラー: ${error.message}</div>`; return; }
+  if (!data || data.length === 0) { document.getElementById('patternList').innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">保存された図案がありません</div>'; return; }
   const list = document.getElementById('patternList');
   list.innerHTML = '';
   data.forEach(p => {
@@ -1190,10 +1075,8 @@ document.getElementById('btnLoad').addEventListener('click', async () => {
       document.querySelector(`input[name=orient][value="${orientation}"]`).checked = true;
       grid = JSON.parse(p.grid);
       history = []; redoStack = [];
-      currentPatternId = p.id;
-      currentPatternName = p.name;
-      drawCanvas();
-      updateInfo();
+      currentPatternId = p.id; currentPatternName = p.name;
+      drawCanvas(); updateInfo();
       closeModal('modalLoad');
       showToast(`「${p.name}」を読み込みました`);
     });
@@ -1203,7 +1086,6 @@ document.getElementById('btnLoad').addEventListener('click', async () => {
 
 document.getElementById('loadCancelBtn').addEventListener('click', () => closeModal('modalLoad'));
 
-// Supabase config modal
 document.getElementById('btnSupabaseConfig').addEventListener('click', () => {
   document.getElementById('sbUrl').value = sbConfig.url;
   document.getElementById('sbKey').value = sbConfig.key;
@@ -1223,80 +1105,66 @@ document.getElementById('sbSave').addEventListener('click', () => {
 // EXPORT PNG
 // =============================================
 document.getElementById('btnExport').addEventListener('click', () => {
-  const EXPORT_CELL = 24;
-  const MARGIN = 36;   // 両サイドの段番号エリア幅
-
-  const gridW = cols * EXPORT_CELL + 1;
-  const gridH = rows * EXPORT_CELL + 1;
+  const { cw, ch } = getCellSize();
+  const MARGIN = 36;
+  const gridW = cols * cw + 1;
+  const gridH = rows * ch + 1;
   const totalW = MARGIN + gridW + MARGIN;
-  const totalH = gridH;
 
   const eCanvas = document.createElement('canvas');
   eCanvas.width = totalW;
-  eCanvas.height = totalH;
+  eCanvas.height = gridH;
   const ec = eCanvas.getContext('2d');
 
-  // 背景
   ec.fillStyle = '#ffffff';
-  ec.fillRect(0, 0, totalW, totalH);
+  ec.fillRect(0, 0, totalW, gridH);
 
-  // ビーズ描画（グリッド分オフセット）
+  // ビーズ
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const x = MARGIN + c * EXPORT_CELL;
-      const y = r * EXPORT_CELL;
+      const x = MARGIN + c * cw, y = r * ch;
       ec.fillStyle = grid[r][c] || '#faf8f4';
-      ec.fillRect(x + 1, y + 1, EXPORT_CELL - 1, EXPORT_CELL - 1);
+      ec.fillRect(x + 1, y + 1, cw - 1, ch - 1);
       if (grid[r][c]) {
         ec.fillStyle = 'rgba(255,255,255,0.2)';
         ec.beginPath();
-        ec.ellipse(x + EXPORT_CELL * 0.3, y + EXPORT_CELL * 0.3, EXPORT_CELL * 0.2, EXPORT_CELL * 0.15, -0.4, 0, Math.PI * 2);
+        ec.ellipse(x + cw * 0.3, y + ch * 0.3, cw * 0.2, ch * 0.15, -0.4, 0, Math.PI * 2);
         ec.fill();
       }
     }
   }
 
-  // グリッド線 - 通常線を先に全描画、強調線を後から上書き
-  // ---- 通常線（縦） ----
-  ec.strokeStyle = '#c8c4bc';
-  ec.lineWidth = 0.5;
+  // 通常線
+  ec.strokeStyle = '#c8c4bc'; ec.lineWidth = 0.5;
   for (let c = 0; c <= cols; c++) {
-    const x = MARGIN + c * EXPORT_CELL;
+    const x = MARGIN + c * cw;
     ec.beginPath(); ec.moveTo(x, 0); ec.lineTo(x, gridH); ec.stroke();
   }
-  // ---- 通常線（横） ----
   for (let r = 0; r <= rows; r++) {
-    const y = r * EXPORT_CELL;
+    const y = r * ch;
     ec.beginPath(); ec.moveTo(MARGIN, y); ec.lineTo(MARGIN + gridW - 1, y); ec.stroke();
   }
-  // ---- 強調線（縦）：左から5目ごと ----
-  ec.strokeStyle = '#6680bb';
-  ec.lineWidth = 2.5;
+  // 強調線
+  ec.strokeStyle = '#6680bb'; ec.lineWidth = 2.5;
   for (let c = 5; c <= cols; c += 5) {
-    const x = MARGIN + c * EXPORT_CELL;
+    const x = MARGIN + c * cw;
     ec.beginPath(); ec.moveTo(x, 0); ec.lineTo(x, gridH); ec.stroke();
   }
-  // ---- 強調線（横）：下から5段ごと ----
-  for (let fromBottom = 5; fromBottom <= rows; fromBottom += 5) {
-    const y = (rows - fromBottom) * EXPORT_CELL;
+  for (let fb = 5; fb <= rows; fb += 5) {
+    const y = (rows - fb) * ch;
     ec.beginPath(); ec.moveTo(MARGIN, y); ec.lineTo(MARGIN + gridW - 1, y); ec.stroke();
   }
 
-  // 段番号（下の段が1、上に向かって増える）
-  ec.font = `bold ${EXPORT_CELL * 0.52}px sans-serif`;
-  ec.textAlign = 'center';
-  ec.textBaseline = 'middle';
+  // 段番号
+  const fontSize = Math.max(10, Math.min(ch * 0.55, 14));
+  ec.font = `bold ${fontSize}px sans-serif`;
+  ec.textAlign = 'center'; ec.textBaseline = 'middle';
   for (let r = 0; r < rows; r++) {
-    const rowNum = rows - r;   // 下段が1
-    const y = r * EXPORT_CELL + EXPORT_CELL / 2;
-
-    // 5の倍数は強調色、それ以外はグレー
+    const rowNum = rows - r;
+    const y = r * ch + ch / 2;
     const isMajor = rowNum % 5 === 0;
     ec.fillStyle = isMajor ? '#4466aa' : '#888880';
-
-    // 左サイド
     ec.fillText(String(rowNum), MARGIN / 2, y);
-    // 右サイド
     ec.fillText(String(rowNum), MARGIN + gridW - 1 + MARGIN / 2, y);
   }
 
@@ -1333,14 +1201,8 @@ function showToast(msg) {
 // =============================================
 document.addEventListener('keydown', e => {
   if (e.target.tagName === 'INPUT') return;
-  if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) {
-    e.preventDefault();
-    document.getElementById('toolUndo').click();
-  }
-  if ((e.key === 'y' && (e.ctrlKey || e.metaKey)) || (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey)) {
-    e.preventDefault();
-    document.getElementById('toolRedo').click();
-  }
+  if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) { e.preventDefault(); document.getElementById('toolUndo').click(); }
+  if ((e.key === 'y' && (e.ctrlKey || e.metaKey)) || (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey)) { e.preventDefault(); document.getElementById('toolRedo').click(); }
   if (e.key === 'p' || e.key === 'P') setTool('pen');
   if (e.key === 'e' || e.key === 'E') setTool('eraser');
   if (e.key === 'i' || e.key === 'I') setTool('eyedropper');
