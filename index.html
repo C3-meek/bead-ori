@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ビーズ織り図案ツール</title>
+<title>ビーズ・ダイヤモンドアート図案ツール</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
@@ -13,6 +13,7 @@
     --border: #d0cec8;
     --accent: #c06b6b;
     --accent2: #7a9bbd;
+    --accent3: #9b6bc0;
     --text: #2c2820;
     --muted: #7a7670;
     --header: #4a3f38;
@@ -23,358 +24,129 @@
     --font: 'Hiragino Kaku Gothic ProN', 'Meiryo', 'Yu Gothic', sans-serif;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  header {
-    background: var(--header);
-    color: #fff;
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    box-shadow: var(--shadow);
-  }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+  header { background: var(--header); color: #fff; padding: 12px 24px; display: flex; align-items: center; gap: 16px; box-shadow: var(--shadow); }
   header h1 { font-size: 18px; font-weight: 600; letter-spacing: 0.05em; }
-  header .step-badge {
-    background: var(--accent);
-    color: #fff;
-    font-size: 11px;
-    padding: 2px 10px;
-    border-radius: 20px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-  }
-  .app-body {
-    display: flex;
-    flex: 1;
-    gap: 0;
-    overflow: hidden;
-    height: calc(100vh - 50px);
-  }
-  /* ---- LEFT SIDEBAR ---- */
-  .sidebar {
-    width: 220px;
-    min-width: 220px;
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    padding-bottom: 16px;
-  }
-  .sidebar-section {
-    padding: 12px 14px 8px;
-    border-bottom: 1px solid var(--border);
-  }
+  header .step-badge { background: var(--accent); color: #fff; font-size: 11px; padding: 2px 10px; border-radius: 20px; font-weight: 700; letter-spacing: 0.08em; }
+  .app-body { display: flex; flex: 1; gap: 0; overflow: hidden; height: calc(100vh - 50px); }
+
+  /* SIDEBAR */
+  .sidebar { width: 224px; min-width: 224px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; padding-bottom: 16px; }
+  .sidebar-section { padding: 10px 14px 8px; border-bottom: 1px solid var(--border); }
   .sidebar-section:last-child { border-bottom: none; }
-  .section-title {
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
+  .section-title { font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 7px; }
+
+  /* モード切替 */
+  .mode-row { display: flex; gap: 5px; margin-bottom: 2px; }
+  .mode-btn {
+    flex: 1; padding: 6px 4px; border-radius: var(--radius); border: 1.5px solid var(--border);
+    background: #faf8f4; font-size: 10px; color: var(--muted); cursor: pointer;
+    transition: all 0.15s; font-family: var(--font); text-align: center; line-height: 1.3;
   }
-  .size-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 6px;
-    font-size: 13px;
+  .mode-btn:hover { border-color: var(--accent2); color: var(--accent2); background: #eef3f8; }
+  .mode-btn.active { border-color: var(--accent3); background: #f5eeff; color: var(--accent3); font-weight: 700; }
+
+  /* サイズ */
+  .size-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 13px; }
+  .size-row select { border: 1px solid var(--border); border-radius: 4px; padding: 3px 5px; font-size: 13px; background: #faf8f4; cursor: pointer; color: var(--text); }
+
+  /* mmサイズ設定 */
+  .mm-section { background: #f5eeff; border-radius: 6px; padding: 8px 10px; margin-top: 6px; border: 1px solid #d8c8ee; }
+  .mm-section .section-title { color: var(--accent3); margin-bottom: 6px; }
+  .mm-row { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; font-size: 12px; }
+  .mm-row input[type=number] {
+    width: 52px; border: 1px solid #d8c8ee; border-radius: 4px; padding: 3px 5px;
+    font-size: 12px; background: #fff; color: var(--text); font-family: var(--font);
   }
-  .size-row select {
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 3px 6px;
-    font-size: 13px;
-    background: #faf8f4;
-    cursor: pointer;
-    color: var(--text);
-  }
-  /* セル形状選択 */
-  .cell-shape-row {
-    display: flex;
-    gap: 6px;
-    margin-top: 6px;
-  }
-  .shape-btn {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    padding: 6px 4px;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--border);
-    background: #faf8f4;
-    cursor: pointer;
-    font-size: 10px;
-    color: var(--muted);
-    transition: all 0.15s;
-    font-family: var(--font);
-  }
+  .mm-row span { font-size: 11px; color: var(--muted); }
+  .mm-info { font-size: 10px; color: var(--accent3); margin-top: 4px; line-height: 1.5; }
+  .mm-preset-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+  .mm-preset { font-size: 10px; padding: 3px 7px; border-radius: 10px; border: 1px solid #d8c8ee; background: #fff; cursor: pointer; color: var(--accent3); font-family: var(--font); transition: all 0.12s; }
+  .mm-preset:hover { background: var(--accent3); color: #fff; border-color: var(--accent3); }
+
+  /* セル形状 */
+  .cell-shape-row { display: flex; gap: 5px; margin-top: 5px; }
+  .shape-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 5px 3px; border-radius: var(--radius); border: 1.5px solid var(--border); background: #faf8f4; cursor: pointer; font-size: 10px; color: var(--muted); transition: all 0.15s; font-family: var(--font); }
   .shape-btn:hover { border-color: var(--accent2); color: var(--accent2); background: #eef3f8; }
   .shape-btn.active { border-color: var(--accent); background: #fdf0f0; color: var(--accent); }
-  .shape-preview {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 24px;
-  }
+  .shape-preview { display: flex; align-items: center; justify-content: center; width: 28px; height: 22px; }
   .shape-preview rect { fill: #c8c4bc; }
   .shape-btn.active .shape-preview rect { fill: var(--accent); }
+
   /* Orientation */
-  .orient-row { display: flex; flex-direction: column; gap: 6px; }
-  .orient-option { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; }
+  .orient-row { display: flex; flex-direction: column; gap: 5px; }
+  .orient-option { display: flex; align-items: center; gap: 7px; cursor: pointer; font-size: 13px; }
   .orient-option input[type=radio] { accent-color: var(--accent); }
+
   /* Tool buttons */
-  .tool-group { display: flex; flex-wrap: wrap; gap: 6px; }
-  .tool-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--border);
-    background: #faf8f4;
-    cursor: pointer;
-    font-size: 10px;
-    color: var(--muted);
-    gap: 3px;
-    transition: all 0.15s;
-    user-select: none;
-    flex-shrink: 0;
-  }
+  .tool-group { display: flex; flex-wrap: wrap; gap: 5px; }
+  .tool-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: var(--radius); border: 1.5px solid var(--border); background: #faf8f4; cursor: pointer; font-size: 10px; color: var(--muted); gap: 3px; transition: all 0.15s; user-select: none; flex-shrink: 0; }
   .tool-btn:hover { border-color: var(--accent2); color: var(--accent2); background: #eef3f8; }
   .tool-btn.active { border-color: var(--accent); background: #fdf0f0; color: var(--accent); }
-  .tool-btn svg { width: 22px; height: 22px; }
+  .tool-btn svg { width: 20px; height: 20px; }
+
   /* Palette */
-  .palette-grid {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 3px;
-    margin-bottom: 8px;
-  }
-  .palette-cell {
-    width: 20px;
-    height: 20px;
-    border-radius: 3px;
-    border: 1.5px solid rgba(0,0,0,0.15);
-    cursor: pointer;
-    transition: transform 0.1s;
-  }
+  .palette-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 3px; margin-bottom: 7px; }
+  .palette-cell { width: 20px; height: 20px; border-radius: 3px; border: 1.5px solid rgba(0,0,0,0.15); cursor: pointer; transition: transform 0.1s; }
   .palette-cell:hover { transform: scale(1.2); z-index: 1; }
   .palette-cell.selected { border: 2.5px solid var(--text); box-shadow: 0 0 0 1px #fff inset; }
-  .current-color-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
-  .current-swatch { width: 28px; height: 28px; border-radius: 5px; border: 1.5px solid var(--border); flex-shrink: 0; }
+  .current-color-row { display: flex; align-items: center; gap: 7px; margin-top: 4px; }
+  .current-swatch { width: 26px; height: 26px; border-radius: 5px; border: 1.5px solid var(--border); flex-shrink: 0; }
   .custom-color-label { font-size: 11px; color: var(--muted); flex: 1; }
-  #colorPickerInput { width: 28px; height: 28px; padding: 0; border: none; background: none; cursor: pointer; border-radius: 4px; overflow: hidden; }
+  #colorPickerInput { width: 26px; height: 26px; padding: 0; border: none; background: none; cursor: pointer; border-radius: 4px; overflow: hidden; }
+
   /* File actions */
-  .action-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    width: 100%;
-    padding: 7px 10px;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: #faf8f4;
-    font-size: 12px;
-    color: var(--text);
-    cursor: pointer;
-    margin-bottom: 5px;
-    transition: background 0.1s;
-    font-family: var(--font);
-  }
+  .action-btn { display: flex; align-items: center; gap: 6px; width: 100%; padding: 7px 10px; border-radius: var(--radius); border: 1px solid var(--border); background: #faf8f4; font-size: 12px; color: var(--text); cursor: pointer; margin-bottom: 5px; transition: background 0.1s; font-family: var(--font); }
   .action-btn:hover { background: #f0ede6; }
   .action-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   .action-btn.primary:hover { background: #b05555; }
   .action-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
-  /* ---- MAIN CANVAS AREA ---- */
+
+  /* CANVAS AREA */
   .canvas-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
-  .canvas-toolbar {
-    background: var(--panel);
-    border-bottom: 1px solid var(--border);
-    padding: 8px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-  .canvas-toolbar .info-tag {
-    font-size: 11px;
-    color: var(--muted);
-    padding: 3px 8px;
-    background: var(--bg);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-  }
-  .canvas-scroll {
-    flex: 1;
-    overflow: auto;
-    display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    padding: 24px;
-    gap: 10px;
-  }
-  #beadCanvas {
-    cursor: crosshair;
-    display: block;
-    border: 1px solid var(--cell-border);
-    border-radius: 4px;
-    box-shadow: var(--shadow);
-    background: var(--cell-empty);
-    image-rendering: pixelated;
-  }
-  /* ---- MODAL ---- */
-  .modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.45);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-  }
+  .canvas-toolbar { background: var(--panel); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; }
+  .canvas-toolbar .info-tag { font-size: 11px; color: var(--muted); padding: 3px 8px; background: var(--bg); border-radius: 20px; border: 1px solid var(--border); white-space: nowrap; }
+  .canvas-toolbar .info-tag.diamond { color: var(--accent3); border-color: #d8c8ee; background: #f5eeff; }
+  .canvas-scroll { flex: 1; overflow: auto; display: flex; align-items: flex-start; justify-content: flex-start; padding: 24px; gap: 10px; }
+  #beadCanvas { cursor: crosshair; display: block; border: 1px solid var(--cell-border); border-radius: 4px; box-shadow: var(--shadow); background: var(--cell-empty); image-rendering: pixelated; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: none; align-items: center; justify-content: center; z-index: 100; }
   .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--panel);
-    border-radius: 12px;
-    padding: 24px 28px;
-    min-width: 340px;
-    max-width: 90vw;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.18);
-  }
+  .modal { background: var(--panel); border-radius: 12px; padding: 24px 28px; min-width: 340px; max-width: 90vw; box-shadow: 0 8px 32px rgba(0,0,0,0.18); }
   .modal h2 { font-size: 16px; margin-bottom: 16px; color: var(--header); }
   .modal label { font-size: 12px; color: var(--muted); display: block; margin-bottom: 3px; }
-  .modal input[type=text] {
-    width: 100%;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 7px 10px;
-    font-size: 13px;
-    margin-bottom: 12px;
-    font-family: var(--font);
-    color: var(--text);
-    background: #faf8f4;
-  }
+  .modal input[type=text] { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; font-size: 13px; margin-bottom: 12px; font-family: var(--font); color: var(--text); background: #faf8f4; }
   .modal-actions { display: flex; gap: 8px; margin-top: 4px; justify-content: flex-end; }
-  .modal-btn {
-    padding: 8px 18px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    cursor: pointer;
-    font-size: 13px;
-    font-family: var(--font);
-    background: #faf8f4;
-    color: var(--text);
-    transition: background 0.1s;
-  }
+  .modal-btn { padding: 8px 18px; border-radius: 6px; border: 1px solid var(--border); cursor: pointer; font-size: 13px; font-family: var(--font); background: #faf8f4; color: var(--text); transition: background 0.1s; }
   .modal-btn:hover { background: #eee; }
   .modal-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
   .modal-btn.primary:hover { background: #b05555; }
-  .pattern-list {
-    max-height: 220px;
-    overflow-y: auto;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    margin-bottom: 12px;
-  }
-  .pattern-item {
-    padding: 8px 12px;
-    cursor: pointer;
-    font-size: 13px;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.1s;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+  .pattern-list { max-height: 220px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 12px; }
+  .pattern-item { padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid var(--border); transition: background 0.1s; display: flex; justify-content: space-between; align-items: center; }
   .pattern-item:last-child { border-bottom: none; }
   .pattern-item:hover { background: #f4f2ee; }
   .pattern-item .meta { font-size: 11px; color: var(--muted); }
-  #toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--header);
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-size: 13px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s;
-    z-index: 200;
-  }
+
+  /* Toast */
+  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--header); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 200; }
   #toast.show { opacity: 1; }
   body.eyedropper-mode #beadCanvas { cursor: cell; }
 
-  /* 段操作ボタン */
+  /* 段・目操作ボタン */
   .canvas-wrap { flex-shrink: 0; }
-  .row-ctrl-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    padding-top: 2px;
-    flex-shrink: 0;
-  }
+  .row-ctrl-col { display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 2px; flex-shrink: 0; }
   .row-ctrl-spacer { flex: 1; }
-  .row-ctrl-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    width: 56px;
-    padding: 7px 4px;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--border);
-    background: #faf8f4;
-    color: var(--accent2);
-    font-size: 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: var(--font);
-    line-height: 1.2;
-    text-align: center;
-  }
-  .row-ctrl-btn svg { width: 16px; height: 16px; }
+  .row-ctrl-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 54px; padding: 6px 4px; border-radius: var(--radius); border: 1.5px solid var(--border); background: #faf8f4; color: var(--accent2); font-size: 10px; cursor: pointer; transition: all 0.15s; font-family: var(--font); line-height: 1.2; text-align: center; }
+  .row-ctrl-btn svg { width: 15px; height: 15px; }
   .row-ctrl-btn:hover { background: #eef3f8; border-color: var(--accent2); }
   .row-ctrl-btn.danger { color: var(--accent); }
   .row-ctrl-btn.danger:hover { background: #fdf0f0; border-color: var(--accent); }
-
-  /* 目操作ボタン */
   .canvas-center-col { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
   .col-ctrl-row { display: flex; flex-direction: row; align-items: center; gap: 4px; }
   .col-ctrl-spacer { width: 8px; flex-shrink: 0; }
-  .col-ctrl-btn {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 3px;
-    padding: 5px 8px;
-    border-radius: var(--radius);
-    border: 1.5px solid var(--border);
-    background: #faf8f4;
-    color: var(--accent2);
-    font-size: 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-    font-family: var(--font);
-    white-space: nowrap;
-  }
-  .col-ctrl-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .col-ctrl-btn { display: flex; flex-direction: row; align-items: center; gap: 3px; padding: 5px 7px; border-radius: var(--radius); border: 1.5px solid var(--border); background: #faf8f4; color: var(--accent2); font-size: 10px; cursor: pointer; transition: all 0.15s; font-family: var(--font); white-space: nowrap; }
+  .col-ctrl-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
   .col-ctrl-btn:hover { background: #eef3f8; border-color: var(--accent2); }
   .col-ctrl-btn.danger { color: var(--accent); }
   .col-ctrl-btn.danger:hover { background: #fdf0f0; border-color: var(--accent); }
@@ -384,14 +156,23 @@
 
 <header>
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg>
-  <h1>ビーズ織り図案ツール</h1>
-  <span class="step-badge">Bead Designer</span>
+  <h1>ビーズ・ダイヤモンドアート図案ツール</h1>
+  <span class="step-badge">Bead &amp; Diamond Designer</span>
 </header>
 
 <div class="app-body">
   <div class="sidebar">
 
-    <!-- Canvas size -->
+    <!-- モード -->
+    <div class="sidebar-section">
+      <div class="section-title">モード</div>
+      <div class="mode-row">
+        <button class="mode-btn active" id="modeBeads">🧵 ビーズ織り</button>
+        <button class="mode-btn" id="modeDiamond">💎 ダイヤモンドアート</button>
+      </div>
+    </div>
+
+    <!-- サイズ -->
     <div class="sidebar-section">
       <div class="section-title">キャンバスサイズ</div>
       <div class="size-row">
@@ -400,32 +181,39 @@
         <label for="rowsSelect">段：</label>
         <select id="rowsSelect"></select>
       </div>
-      <button class="action-btn" id="applySize" style="margin-top:4px">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-        適用
+      <button class="action-btn" id="applySize" style="margin-top:2px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>適用
       </button>
 
-      <!-- セル形状 -->
-      <div class="section-title" style="margin-top:10px">マスの形</div>
-      <div class="cell-shape-row">
-        <button class="shape-btn active" id="shapeSquare" title="正方形">
-          <div class="shape-preview">
-            <svg width="20" height="20" viewBox="0 0 20 20"><rect x="2" y="2" width="16" height="16" rx="1"/></svg>
-          </div>
-          正方形
-        </button>
-        <button class="shape-btn" id="shapeTall" title="タテ長">
-          <div class="shape-preview">
-            <svg width="14" height="20" viewBox="0 0 14 20"><rect x="1" y="1" width="12" height="18" rx="1"/></svg>
-          </div>
-          タテ長
-        </button>
-        <button class="shape-btn" id="shapeWide" title="ヨコ長">
-          <div class="shape-preview">
-            <svg width="20" height="14" viewBox="0 0 20 14"><rect x="1" y="1" width="18" height="12" rx="1"/></svg>
-          </div>
-          ヨコ長
-        </button>
+      <!-- mmサイズ設定 -->
+      <div class="mm-section" id="mmSection">
+        <div class="section-title">マスのサイズ（mm）</div>
+        <div class="mm-preset-row" id="mmPresets"></div>
+        <div class="mm-row">
+          <label style="font-size:11px;color:var(--muted);white-space:nowrap">幅</label>
+          <input type="number" id="mmW" min="0.5" max="50" step="0.5" value="2.5">
+          <span>mm</span>
+          <label style="font-size:11px;color:var(--muted);white-space:nowrap;margin-left:4px">高さ</label>
+          <input type="number" id="mmH" min="0.5" max="50" step="0.5" value="2.5">
+          <span>mm</span>
+        </div>
+        <div class="mm-info" id="mmInfo"></div>
+      </div>
+
+      <!-- セル形状（mmモード時は非表示） -->
+      <div id="shapeSection">
+        <div class="section-title" style="margin-top:8px">マスの形</div>
+        <div class="cell-shape-row">
+          <button class="shape-btn active" id="shapeSquare">
+            <div class="shape-preview"><svg width="18" height="18" viewBox="0 0 18 18"><rect x="1" y="1" width="16" height="16" rx="1"/></svg></div>正方形
+          </button>
+          <button class="shape-btn" id="shapeTall">
+            <div class="shape-preview"><svg width="12" height="18" viewBox="0 0 12 18"><rect x="1" y="1" width="10" height="16" rx="1"/></svg></div>タテ長
+          </button>
+          <button class="shape-btn" id="shapeWide">
+            <div class="shape-preview"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="1" y="1" width="16" height="10" rx="1"/></svg></div>ヨコ長
+          </button>
+        </div>
       </div>
     </div>
 
@@ -433,12 +221,8 @@
     <div class="sidebar-section">
       <div class="section-title">向き</div>
       <div class="orient-row">
-        <label class="orient-option">
-          <input type="radio" name="orient" value="tate" checked id="orientTate"> タテ向き
-        </label>
-        <label class="orient-option">
-          <input type="radio" name="orient" value="yoko" id="orientYoko"> ヨコ向き
-        </label>
+        <label class="orient-option"><input type="radio" name="orient" value="tate" checked id="orientTate"> タテ向き</label>
+        <label class="orient-option"><input type="radio" name="orient" value="yoko" id="orientYoko"> ヨコ向き</label>
       </div>
     </div>
 
@@ -447,37 +231,30 @@
       <div class="section-title">ツール</div>
       <div class="tool-group">
         <button class="tool-btn active" id="toolPen" title="ペン">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
-          ペン
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>ペン
         </button>
         <button class="tool-btn" id="toolEraser" title="消しゴム">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l10-10 7 7-2.5 2.5"/><path d="M6.0001 11L13 18"/></svg>
-          消し
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20H7L3 16l10-10 7 7-2.5 2.5"/><path d="M6.0001 11L13 18"/></svg>消し
         </button>
         <button class="tool-btn" id="toolEyedropper" title="スポイト">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l4-4 9.5-9.5a2 2 0 0 0-2.828-2.828L4 14.5 3 21z"/><path d="M14.5 7L17 4.5a2 2 0 0 1 2.828 0l.172.172a2 2 0 0 1 0 2.828L17.5 10"/></svg>
-          スポイト
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l4-4 9.5-9.5a2 2 0 0 0-2.828-2.828L4 14.5 3 21z"/><path d="M14.5 7L17 4.5a2 2 0 0 1 2.828 0l.172.172a2 2 0 0 1 0 2.828L17.5 10"/></svg>スポイト
         </button>
         <button class="tool-btn" id="toolFill" title="全塗り">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>
-          全塗り
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l19-9-9 19-2-8-8-2z"/></svg>全塗り
         </button>
         <button class="tool-btn" id="toolClear" title="全消し">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-          全消し
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>全消し
         </button>
         <button class="tool-btn" id="toolUndo" title="元に戻す">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
-          元に戻す
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>元に戻す
         </button>
         <button class="tool-btn" id="toolRedo" title="やり直し">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
-          やり直し
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>やり直し
         </button>
       </div>
     </div>
 
-    <!-- Color palette -->
+    <!-- Palette -->
     <div class="sidebar-section">
       <div class="section-title">カラーパレット</div>
       <div class="palette-grid" id="paletteGrid"></div>
@@ -492,106 +269,65 @@
     <div class="sidebar-section">
       <div class="section-title">ファイル</div>
       <button class="action-btn" id="btnSave">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Supabaseに保存
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>Supabaseに保存
       </button>
       <button class="action-btn" id="btnLoad">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        図案を読み込む
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>図案を読み込む
       </button>
       <button class="action-btn" id="btnExport">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-        PNG書き出し
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>PNG書き出し
       </button>
       <button class="action-btn" id="btnSupabaseConfig">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M20 12h-2M6 12H4M17.66 17.66l-1.41-1.41M6.34 17.66l1.41-1.41M12 20v-2M12 6V4"/></svg>
-        Supabase設定
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M20 12h-2M6 12H4M17.66 17.66l-1.41-1.41M6.34 17.66l1.41-1.41M12 20v-2M12 6V4"/></svg>Supabase設定
       </button>
     </div>
-
   </div><!-- /sidebar -->
 
   <!-- MAIN CANVAS -->
   <div class="canvas-area">
     <div class="canvas-toolbar">
-      <span class="info-tag" id="canvasInfo">4目 × 4段 ／ タテ向き</span>
+      <span class="info-tag" id="canvasInfo">4目 × 4段</span>
       <span class="info-tag" id="toolInfo">ペンツール</span>
       <span class="info-tag" id="shapeInfo">正方形</span>
+      <span class="info-tag diamond" id="sizeInfo" style="display:none"></span>
       <span class="info-tag" id="cursorInfo">-</span>
     </div>
     <div class="canvas-scroll" id="canvasScroll">
-      <!-- 段操作ボタン（左側） -->
       <div class="row-ctrl-col">
-        <button class="row-ctrl-btn" id="addRowTop" title="先頭に1段追加">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>上に追加</span>
-        </button>
+        <button class="row-ctrl-btn" id="addRowTop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>上追加</span></button>
         <div class="row-ctrl-spacer"></div>
-        <button class="row-ctrl-btn danger" id="delRowTop" title="先頭の1段を削除">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>上を削除</span>
-        </button>
+        <button class="row-ctrl-btn danger" id="delRowTop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg><span>上削除</span></button>
       </div>
-
-      <!-- 中央：目操作ボタン＋キャンバス -->
       <div class="canvas-center-col">
         <div class="col-ctrl-row">
-          <button class="col-ctrl-btn danger" id="delColLeft" title="左端の1目を削除">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            左削除
-          </button>
+          <button class="col-ctrl-btn danger" id="delColLeft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>左削除</button>
           <div class="col-ctrl-spacer"></div>
-          <button class="col-ctrl-btn" id="addColLeft" title="左に1目追加">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            左追加
-          </button>
+          <button class="col-ctrl-btn" id="addColLeft"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>左追加</button>
           <div style="flex:1"></div>
-          <button class="col-ctrl-btn" id="addColRight" title="右に1目追加">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            右追加
-          </button>
+          <button class="col-ctrl-btn" id="addColRight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>右追加</button>
           <div class="col-ctrl-spacer"></div>
-          <button class="col-ctrl-btn danger" id="delColRight" title="右端の1目を削除">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-            右削除
-          </button>
+          <button class="col-ctrl-btn danger" id="delColRight"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>右削除</button>
         </div>
-        <div class="canvas-wrap">
-          <canvas id="beadCanvas"></canvas>
-        </div>
+        <div class="canvas-wrap"><canvas id="beadCanvas"></canvas></div>
       </div>
-
-      <!-- 段操作ボタン（右側） -->
       <div class="row-ctrl-col">
-        <button class="row-ctrl-btn" id="addRowBottom" title="末尾に1段追加">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>下に追加</span>
-        </button>
+        <button class="row-ctrl-btn" id="addRowBottom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg><span>下追加</span></button>
         <div class="row-ctrl-spacer"></div>
-        <button class="row-ctrl-btn danger" id="delRowBottom" title="末尾の1段を削除">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          <span>下を削除</span>
-        </button>
+        <button class="row-ctrl-btn danger" id="delRowBottom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/></svg><span>下削除</span></button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Toast -->
 <div id="toast"></div>
 
 <!-- Supabase Config Modal -->
 <div class="modal-overlay" id="modalSupabase">
   <div class="modal">
     <h2>⚙️ Supabase 接続設定</h2>
-    <label>Project URL</label>
-    <input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co">
-    <label>Anon Key</label>
-    <input type="text" id="sbKey" placeholder="eyJhbGci...">
-    <div class="modal-actions">
-      <button class="modal-btn" id="sbCancel">キャンセル</button>
-      <button class="modal-btn primary" id="sbSave">保存</button>
-    </div>
+    <label>Project URL</label><input type="text" id="sbUrl" placeholder="https://xxxx.supabase.co">
+    <label>Anon Key</label><input type="text" id="sbKey" placeholder="eyJhbGci...">
+    <div class="modal-actions"><button class="modal-btn" id="sbCancel">キャンセル</button><button class="modal-btn primary" id="sbSave">保存</button></div>
   </div>
 </div>
 
@@ -599,13 +335,9 @@
 <div class="modal-overlay" id="modalSave">
   <div class="modal">
     <h2>💾 図案を保存</h2>
-    <label>図案名</label>
-    <input type="text" id="savePatternName" placeholder="作品名を入力">
+    <label>図案名</label><input type="text" id="savePatternName" placeholder="作品名を入力">
     <div id="overwriteHint" style="display:none;font-size:11px;color:var(--accent);margin-bottom:8px;">⚠ 同じ名前のまま保存すると上書きされます。別名にすると新規保存になります。</div>
-    <div class="modal-actions">
-      <button class="modal-btn" id="saveCancelBtn">キャンセル</button>
-      <button class="modal-btn primary" id="saveConfirmBtn">保存する</button>
-    </div>
+    <div class="modal-actions"><button class="modal-btn" id="saveCancelBtn">キャンセル</button><button class="modal-btn primary" id="saveConfirmBtn">保存する</button></div>
   </div>
 </div>
 
@@ -613,18 +345,14 @@
 <div class="modal-overlay" id="modalLoad">
   <div class="modal">
     <h2>📂 図案を読み込む</h2>
-    <div class="pattern-list" id="patternList">
-      <div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">読み込み中...</div>
-    </div>
-    <div class="modal-actions">
-      <button class="modal-btn" id="loadCancelBtn">キャンセル</button>
-    </div>
+    <div class="pattern-list" id="patternList"><div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">読み込み中...</div></div>
+    <div class="modal-actions"><button class="modal-btn" id="loadCancelBtn">キャンセル</button></div>
   </div>
 </div>
 
 <script>
 // =============================================
-// STATE
+// CONSTANTS & STATE
 // =============================================
 const PALETTE = [
   '#ffffff','#f5e6d0','#f2c4a0','#e8956b','#c06b6b','#8b3a3a',
@@ -638,6 +366,19 @@ const PALETTE = [
   '#000000','#1a1a2e','#16213e','#0f3460','#533483','#e94560'
 ];
 
+// ダイヤモンドアートのよく使うサイズプリセット [名前, 幅mm, 高さmm]
+const MM_PRESETS = [
+  ['DA標準 2.5mm', 2.5, 2.5],
+  ['DA大粒 3mm', 3, 3],
+  ['ビーズ 3.5mm', 3.5, 3.5],
+  ['ビーズ 4mm', 4, 4],
+  ['ビーズ 6mm', 6, 6],
+];
+
+const PX_PER_MM = 3.78; // 96dpi基準 (1mm = 96/25.4 ≈ 3.78px)
+const SCREEN_SCALE = 3;  // 画面表示用倍率（見やすくするため）
+
+let appMode = 'beads'; // 'beads' | 'diamond'
 let cols = 4, rows = 4;
 let orientation = 'tate';
 let grid = [];
@@ -650,21 +391,93 @@ let supabaseClient = null;
 let sbConfig = { url: '', key: '' };
 let currentPatternId = null;
 let currentPatternName = '';
-
-// セル形状：'square'=正方形, 'tall'=タテ長(横24 縦36), 'wide'=ヨコ長(横36 縦24)
 let cellShape = 'square';
-
-// セル幅・高さをshapeから計算
-function getCellSize() {
-  switch (cellShape) {
-    case 'tall':  return { cw: 18, ch: 28 };
-    case 'wide':  return { cw: 28, ch: 18 };
-    default:      return { cw: 24, ch: 24 };
-  }
-}
+let mmW = 2.5, mmH = 2.5; // mmサイズ（mmモード時に使用）
+let useMmMode = false;     // mmサイズ指定モードかどうか
 
 const GRID_COLOR = '#c8c4bc';
 const CELL_EMPTY = '#faf8f4';
+
+// =============================================
+// CELL SIZE CALCULATION
+// =============================================
+function getCellSize() {
+  if (useMmMode) {
+    // mm → px（画面表示用にSCREEN_SCALE倍）
+    const cw = Math.max(8, Math.round(mmW * PX_PER_MM * SCREEN_SCALE));
+    const ch = Math.max(8, Math.round(mmH * PX_PER_MM * SCREEN_SCALE));
+    return { cw, ch };
+  }
+  switch (cellShape) {
+    case 'tall': return { cw: 18, ch: 28 };
+    case 'wide': return { cw: 28, ch: 18 };
+    default:     return { cw: 24, ch: 24 };
+  }
+}
+
+// PNG書き出し用セルサイズ（実寸mm×PX_PER_MM×2倍 で高解像度）
+function getExportCellSize() {
+  if (useMmMode) {
+    const cw = Math.max(16, Math.round(mmW * PX_PER_MM * 4));
+    const ch = Math.max(16, Math.round(mmH * PX_PER_MM * 4));
+    return { cw, ch };
+  }
+  return getCellSize(); // ビーズモードはそのまま
+}
+
+// =============================================
+// MODE SWITCHING
+// =============================================
+function setAppMode(mode) {
+  appMode = mode;
+  useMmMode = (mode === 'diamond');
+  document.getElementById('modeBeads').classList.toggle('active', mode === 'beads');
+  document.getElementById('modeDiamond').classList.toggle('active', mode === 'diamond');
+  document.getElementById('mmSection').style.display = mode === 'diamond' ? 'block' : 'block'; // 常に表示
+  document.getElementById('shapeSection').style.display = mode === 'diamond' ? 'none' : 'block';
+  document.getElementById('sizeInfo').style.display = mode === 'diamond' ? 'inline-block' : 'none';
+
+  if (mode === 'diamond') {
+    // ダイヤモンドアートモード：mmモードに切替
+    useMmMode = true;
+    setCellShape('square'); // ダイヤモンドは正方形
+  } else {
+    useMmMode = false;
+  }
+  drawCanvas();
+  updateInfo();
+}
+
+document.getElementById('modeBeads').addEventListener('click', () => setAppMode('beads'));
+document.getElementById('modeDiamond').addEventListener('click', () => setAppMode('diamond'));
+
+// =============================================
+// MM SIZE INPUTS
+// =============================================
+function buildMmPresets() {
+  const row = document.getElementById('mmPresets');
+  MM_PRESETS.forEach(([label, w, h]) => {
+    const btn = document.createElement('button');
+    btn.className = 'mm-preset';
+    btn.textContent = label;
+    btn.addEventListener('click', () => {
+      mmW = w; mmH = h;
+      document.getElementById('mmW').value = w;
+      document.getElementById('mmH').value = h;
+      drawCanvas(); updateInfo();
+    });
+    row.appendChild(btn);
+  });
+}
+
+document.getElementById('mmW').addEventListener('input', e => {
+  mmW = parseFloat(e.target.value) || 2.5;
+  drawCanvas(); updateInfo();
+});
+document.getElementById('mmH').addEventListener('input', e => {
+  mmH = parseFloat(e.target.value) || 2.5;
+  drawCanvas(); updateInfo();
+});
 
 // =============================================
 // INIT
@@ -672,22 +485,28 @@ const CELL_EMPTY = '#faf8f4';
 function initGrid(c, r) {
   cols = c; rows = r;
   grid = Array.from({ length: r }, () => Array(c).fill(null));
-  history = [];
-  redoStack = [];
-  currentPatternId = null;
-  currentPatternName = '';
-  drawCanvas();
-  updateInfo();
+  history = []; redoStack = [];
+  currentPatternId = null; currentPatternName = '';
+  drawCanvas(); updateInfo();
 }
 
 function updateInfo() {
-  const shapeLabel = { square:'正方形', tall:'タテ長', wide:'ヨコ長' }[cellShape];
-  document.getElementById('canvasInfo').textContent = `${cols}目 × ${rows}段 ／ ${orientation === 'tate' ? 'タテ向き' : 'ヨコ向き'}`;
+  const shapeLabel = useMmMode ? `${mmW}×${mmH}mm` : { square:'正方形', tall:'タテ長', wide:'ヨコ長' }[cellShape];
+  const orientLabel = orientation === 'tate' ? 'タテ向き' : 'ヨコ向き';
+  document.getElementById('canvasInfo').textContent = `${cols}目 × ${rows}段 ／ ${orientLabel}`;
   document.getElementById('shapeInfo').textContent = shapeLabel;
+
+  if (useMmMode) {
+    const totalWmm = (cols * mmW).toFixed(1);
+    const totalHmm = (rows * mmH).toFixed(1);
+    document.getElementById('sizeInfo').textContent = `実寸 ${totalWmm}×${totalHmm}mm`;
+    document.getElementById('mmInfo').textContent =
+      `仕上がりサイズ：約 ${totalWmm} × ${totalHmm} mm\n（${(totalWmm/10).toFixed(1)} × ${(totalHmm/10).toFixed(1)} cm）`;
+  }
 }
 
 // =============================================
-// CANVAS
+// CANVAS DRAWING
 // =============================================
 const canvas = document.getElementById('beadCanvas');
 const ctx = canvas.getContext('2d');
@@ -698,29 +517,42 @@ function drawCanvas() {
   const H = rows * ch + 1;
   canvas.width = W;
   canvas.height = H;
-
   ctx.clearRect(0, 0, W, H);
 
   // ビーズ描画
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
-      const x = c * cw;
-      const y = r * ch;
+      const x = c * cw, y = r * ch;
       const color = grid[r][c];
       ctx.fillStyle = color || CELL_EMPTY;
       ctx.fillRect(x + 1, y + 1, cw - 1, ch - 1);
+
       if (color) {
-        ctx.fillStyle = 'rgba(255,255,255,0.22)';
-        ctx.beginPath();
-        ctx.ellipse(x + cw * 0.32, y + ch * 0.32, cw * 0.22, ch * 0.16, -0.4, 0, Math.PI * 2);
-        ctx.fill();
+        if (appMode === 'diamond') {
+          // ダイヤモンドアート：菱形ハイライト
+          ctx.fillStyle = 'rgba(255,255,255,0.28)';
+          const cx2 = x + cw * 0.5, cy2 = y + ch * 0.5;
+          const rr = Math.min(cw, ch) * 0.28;
+          ctx.beginPath();
+          ctx.moveTo(cx2, cy2 - rr);
+          ctx.lineTo(cx2 + rr * 0.55, cy2);
+          ctx.lineTo(cx2, cy2 + rr * 0.5);
+          ctx.lineTo(cx2 - rr * 0.55, cy2);
+          ctx.closePath();
+          ctx.fill();
+        } else {
+          // ビーズ：楕円ハイライト
+          ctx.fillStyle = 'rgba(255,255,255,0.22)';
+          ctx.beginPath();
+          ctx.ellipse(x + cw * 0.32, y + ch * 0.32, cw * 0.22, ch * 0.16, -0.4, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
     }
   }
 
   // 通常グリッド線（縦）
-  ctx.strokeStyle = GRID_COLOR;
-  ctx.lineWidth = 0.5;
+  ctx.strokeStyle = GRID_COLOR; ctx.lineWidth = 0.5;
   for (let c = 0; c <= cols; c++) {
     ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, H); ctx.stroke();
   }
@@ -729,8 +561,7 @@ function drawCanvas() {
     ctx.beginPath(); ctx.moveTo(0, r * ch); ctx.lineTo(W, r * ch); ctx.stroke();
   }
   // 強調線（縦）：左から5目ごと
-  ctx.strokeStyle = '#6680bb';
-  ctx.lineWidth = 2.5;
+  ctx.strokeStyle = '#6680bb'; ctx.lineWidth = 2.5;
   for (let c = 5; c <= cols; c += 5) {
     ctx.beginPath(); ctx.moveTo(c * cw, 0); ctx.lineTo(c * cw, H); ctx.stroke();
   }
@@ -748,8 +579,7 @@ function getCellAt(e) {
   const scaleY = canvas.height / rect.height;
   const x = (e.clientX - rect.left) * scaleX;
   const y = (e.clientY - rect.top) * scaleY;
-  const c = Math.floor(x / cw);
-  const r = Math.floor(y / ch);
+  const c = Math.floor(x / cw), r = Math.floor(y / ch);
   if (c < 0 || c >= cols || r < 0 || r >= rows) return null;
   return { c, r };
 }
@@ -757,13 +587,8 @@ function getCellAt(e) {
 function applyPen(cell) {
   if (!cell) return;
   const prev = grid[cell.r][cell.c];
-  if (currentTool === 'pen') {
-    if (prev === currentColor) return;
-    grid[cell.r][cell.c] = currentColor;
-  } else if (currentTool === 'eraser') {
-    if (prev === null) return;
-    grid[cell.r][cell.c] = null;
-  }
+  if (currentTool === 'pen') { if (prev === currentColor) return; grid[cell.r][cell.c] = currentColor; }
+  else if (currentTool === 'eraser') { if (prev === null) return; grid[cell.r][cell.c] = null; }
 }
 
 function saveHistory() {
@@ -777,19 +602,17 @@ function saveHistory() {
 // =============================================
 function setCellShape(shape) {
   cellShape = shape;
-  document.getElementById('shapeSquare').classList.toggle('active', shape === 'square');
-  document.getElementById('shapeTall').classList.toggle('active', shape === 'tall');
-  document.getElementById('shapeWide').classList.toggle('active', shape === 'wide');
-  drawCanvas();
-  updateInfo();
+  ['shapeSquare','shapeTall','shapeWide'].forEach(id => document.getElementById(id).classList.remove('active'));
+  const map = { square:'shapeSquare', tall:'shapeTall', wide:'shapeWide' };
+  if (map[shape]) document.getElementById(map[shape]).classList.add('active');
+  drawCanvas(); updateInfo();
 }
-
 document.getElementById('shapeSquare').addEventListener('click', () => setCellShape('square'));
 document.getElementById('shapeTall').addEventListener('click', () => setCellShape('tall'));
 document.getElementById('shapeWide').addEventListener('click', () => setCellShape('wide'));
 
 // =============================================
-// MOUSE EVENTS
+// MOUSE / TOUCH EVENTS
 // =============================================
 canvas.addEventListener('mousedown', e => {
   if (e.button !== 0) return;
@@ -800,31 +623,24 @@ canvas.addEventListener('mousedown', e => {
     if (picked) { setCurrentColor(picked); setTool('pen'); showToast('色を取得しました：' + picked); }
     return;
   }
-  saveHistory();
-  isDrawing = true;
-  applyPen(cell);
-  drawCanvas();
+  saveHistory(); isDrawing = true; applyPen(cell); drawCanvas();
 });
 
 canvas.addEventListener('mousemove', e => {
   const cell = getCellAt(e);
-  if (cell) document.getElementById('cursorInfo').textContent = `(${cell.c + 1}目, ${cell.r + 1}段)`;
+  if (cell) document.getElementById('cursorInfo').textContent = `(${cell.c+1}目, ${cell.r+1}段)`;
   if (!isDrawing) return;
-  applyPen(cell);
-  drawCanvas();
+  applyPen(cell); drawCanvas();
 });
 
 canvas.addEventListener('mouseup', () => { isDrawing = false; });
 canvas.addEventListener('mouseleave', () => { isDrawing = false; });
-
 canvas.addEventListener('touchstart', e => {
-  e.preventDefault();
-  const t = e.touches[0];
+  e.preventDefault(); const t = e.touches[0];
   canvas.dispatchEvent(new MouseEvent('mousedown', { clientX: t.clientX, clientY: t.clientY, button: 0 }));
 }, { passive: false });
 canvas.addEventListener('touchmove', e => {
-  e.preventDefault();
-  const t = e.touches[0];
+  e.preventDefault(); const t = e.touches[0];
   canvas.dispatchEvent(new MouseEvent('mousemove', { clientX: t.clientX, clientY: t.clientY }));
 }, { passive: false });
 canvas.addEventListener('touchend', () => canvas.dispatchEvent(new MouseEvent('mouseup')));
@@ -835,10 +651,9 @@ canvas.addEventListener('touchend', () => canvas.dispatchEvent(new MouseEvent('m
 function setTool(name) {
   currentTool = name;
   document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-  const map = { pen: 'toolPen', eraser: 'toolEraser', eyedropper: 'toolEyedropper' };
+  const map = { pen:'toolPen', eraser:'toolEraser', eyedropper:'toolEyedropper' };
   if (map[name]) document.getElementById(map[name]).classList.add('active');
-  const labels = { pen: 'ペンツール', eraser: '消しゴム', eyedropper: 'スポイト' };
-  document.getElementById('toolInfo').textContent = labels[name] || name;
+  document.getElementById('toolInfo').textContent = { pen:'ペンツール', eraser:'消しゴム', eyedropper:'スポイト' }[name] || name;
   document.body.classList.toggle('eyedropper-mode', name === 'eyedropper');
 }
 
@@ -846,72 +661,52 @@ document.getElementById('toolPen').addEventListener('click', () => setTool('pen'
 document.getElementById('toolEraser').addEventListener('click', () => setTool('eraser'));
 document.getElementById('toolEyedropper').addEventListener('click', () => {
   if (window.EyeDropper) {
-    new EyeDropper().open().then(r => {
-      setCurrentColor(r.sRGBHex); setTool('pen');
-      showToast('色を取得しました：' + r.sRGBHex);
-    }).catch(() => {});
+    new EyeDropper().open().then(r => { setCurrentColor(r.sRGBHex); setTool('pen'); showToast('色を取得：' + r.sRGBHex); }).catch(() => {});
   } else {
-    showToast('このブラウザは画面全体のスポイトに非対応です（Chrome推奨）。キャンバス内の色を取得します。');
-    setTool('eyedropper');
+    showToast('Chrome推奨。キャンバス内の色を取得します。'); setTool('eyedropper');
   }
 });
-
 document.getElementById('toolFill').addEventListener('click', () => {
-  saveHistory();
-  grid = Array.from({ length: rows }, () => Array(cols).fill(currentColor));
-  drawCanvas();
-  showToast('全塗りしました');
+  saveHistory(); grid = Array.from({ length: rows }, () => Array(cols).fill(currentColor)); drawCanvas(); showToast('全塗りしました');
 });
-
 document.getElementById('toolClear').addEventListener('click', () => {
-  if (!confirm('すべてのビーズを消去しますか？')) return;
-  saveHistory();
-  grid = Array.from({ length: rows }, () => Array(cols).fill(null));
-  drawCanvas();
-  showToast('全消ししました');
+  if (!confirm('すべて消去しますか？')) return;
+  saveHistory(); grid = Array.from({ length: rows }, () => Array(cols).fill(null)); drawCanvas(); showToast('全消ししました');
 });
 
 // =============================================
 // 段の追加・削除
 // =============================================
-function addRow(position) {
+function addRow(pos) {
   saveHistory();
-  const emptyRow = Array(cols).fill(null);
-  if (position === 'top') grid.unshift(emptyRow); else grid.push(emptyRow);
-  rows++;
-  drawCanvas(); updateInfo();
-  showToast(position === 'top' ? '先頭に1段追加しました' : '末尾に1段追加しました');
+  const e = Array(cols).fill(null);
+  if (pos === 'top') grid.unshift(e); else grid.push(e);
+  rows++; drawCanvas(); updateInfo();
+  showToast(pos === 'top' ? '上に1段追加' : '下に1段追加');
 }
-
-function deleteRow(position) {
+function deleteRow(pos) {
   if (rows <= 1) { showToast('これ以上削除できません'); return; }
   saveHistory();
-  if (position === 'top') grid.shift(); else grid.pop();
-  rows--;
-  drawCanvas(); updateInfo();
-  showToast(position === 'top' ? '先頭の1段を削除しました' : '末尾の1段を削除しました');
+  if (pos === 'top') grid.shift(); else grid.pop();
+  rows--; drawCanvas(); updateInfo();
+  showToast(pos === 'top' ? '上の1段を削除' : '下の1段を削除');
 }
 
 // =============================================
 // 目（列）の追加・削除
 // =============================================
-function addCol(position) {
+function addCol(pos) {
   saveHistory();
-  if (position === 'left') grid = grid.map(row => [null, ...row]);
-  else grid = grid.map(row => [...row, null]);
-  cols++;
-  drawCanvas(); updateInfo();
-  showToast(position === 'left' ? '左に1目追加しました' : '右に1目追加しました');
+  if (pos === 'left') grid = grid.map(row => [null, ...row]); else grid = grid.map(row => [...row, null]);
+  cols++; drawCanvas(); updateInfo();
+  showToast(pos === 'left' ? '左に1目追加' : '右に1目追加');
 }
-
-function deleteCol(position) {
+function deleteCol(pos) {
   if (cols <= 1) { showToast('これ以上削除できません'); return; }
   saveHistory();
-  if (position === 'left') grid = grid.map(row => row.slice(1));
-  else grid = grid.map(row => row.slice(0, -1));
-  cols--;
-  drawCanvas(); updateInfo();
-  showToast(position === 'left' ? '左端の1目を削除しました' : '右端の1目を削除しました');
+  if (pos === 'left') grid = grid.map(row => row.slice(1)); else grid = grid.map(row => row.slice(0, -1));
+  cols--; drawCanvas(); updateInfo();
+  showToast(pos === 'left' ? '左端1目を削除' : '右端1目を削除');
 }
 
 document.getElementById('addColLeft').addEventListener('click', () => addCol('left'));
@@ -924,20 +719,14 @@ document.getElementById('delRowTop').addEventListener('click', () => deleteRow('
 document.getElementById('delRowBottom').addEventListener('click', () => deleteRow('bottom'));
 
 document.getElementById('toolUndo').addEventListener('click', () => {
-  if (history.length === 0) { showToast('これ以上戻れません'); return; }
-  redoStack.push(grid.map(row => [...row]));
-  grid = history.pop();
-  // rowsとcolsをgridから再計算
-  rows = grid.length; cols = grid[0]?.length || cols;
-  drawCanvas(); updateInfo();
+  if (!history.length) { showToast('これ以上戻れません'); return; }
+  redoStack.push(grid.map(r => [...r])); grid = history.pop();
+  rows = grid.length; cols = grid[0]?.length || cols; drawCanvas(); updateInfo();
 });
-
 document.getElementById('toolRedo').addEventListener('click', () => {
-  if (redoStack.length === 0) { showToast('これ以上やり直せません'); return; }
-  history.push(grid.map(row => [...row]));
-  grid = redoStack.pop();
-  rows = grid.length; cols = grid[0]?.length || cols;
-  drawCanvas(); updateInfo();
+  if (!redoStack.length) { showToast('これ以上やり直せません'); return; }
+  history.push(grid.map(r => [...r])); grid = redoStack.pop();
+  rows = grid.length; cols = grid[0]?.length || cols; drawCanvas(); updateInfo();
 });
 
 // =============================================
@@ -948,9 +737,7 @@ function buildPalette() {
   pg.innerHTML = '';
   PALETTE.forEach(c => {
     const el = document.createElement('div');
-    el.className = 'palette-cell';
-    el.style.background = c;
-    el.title = c;
+    el.className = 'palette-cell'; el.style.background = c; el.title = c;
     el.addEventListener('click', () => setCurrentColor(c));
     pg.appendChild(el);
   });
@@ -966,41 +753,34 @@ function setCurrentColor(c) {
 }
 
 function hexToRgb(hex) {
-  const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
   return `rgb(${r}, ${g}, ${b})`;
 }
-
 function rgbToHex(color) {
   if (color.startsWith('#')) return color;
   const m = color.match(/\d+/g);
   if (!m) return color;
-  return '#' + m.slice(0,3).map(n => parseInt(n).toString(16).padStart(2,'0')).join('');
+  return '#'+m.slice(0,3).map(n=>parseInt(n).toString(16).padStart(2,'0')).join('');
 }
-
 document.getElementById('colorPickerInput').addEventListener('input', e => setCurrentColor(e.target.value));
 
 // =============================================
-// CANVAS SIZE & ORIENTATION
+// SIZE SELECTS & ORIENTATION
 // =============================================
 function buildSelects() {
-  const colsSel = document.getElementById('colsSelect');
-  const rowsSel = document.getElementById('rowsSelect');
-  for (let i = 2; i <= 40; i++) {
-    const o1 = new Option(i, i); const o2 = new Option(i, i);
-    if (i === 4) { o1.selected = true; o2.selected = true; }
-    colsSel.appendChild(o1); rowsSel.appendChild(o2);
+  const cs = document.getElementById('colsSelect'), rs = document.getElementById('rowsSelect');
+  for (let i = 2; i <= 100; i++) {
+    const o1=new Option(i,i), o2=new Option(i,i);
+    if (i===4){o1.selected=true;o2.selected=true;}
+    cs.appendChild(o1); rs.appendChild(o2);
   }
 }
-
 document.getElementById('applySize').addEventListener('click', () => {
-  const newCols = parseInt(document.getElementById('colsSelect').value);
-  const newRows = parseInt(document.getElementById('rowsSelect').value);
-  if (newCols === cols && newRows === rows) return;
-  if (!confirm(`キャンバスを ${newCols}目 × ${newRows}段 に変更しますか？\n（現在の図案は失われます）`)) return;
-  initGrid(newCols, newRows);
-  showToast(`${newCols}目 × ${newRows}段 に変更しました`);
+  const nc=parseInt(document.getElementById('colsSelect').value), nr=parseInt(document.getElementById('rowsSelect').value);
+  if (nc===cols&&nr===rows) return;
+  if (!confirm(`${nc}目 × ${nr}段 に変更しますか？（図案は失われます）`)) return;
+  initGrid(nc, nr); showToast(`${nc}目 × ${nr}段 に変更しました`);
 });
-
 document.querySelectorAll('input[name=orient]').forEach(r => {
   r.addEventListener('change', e => { orientation = e.target.value; updateInfo(); });
 });
@@ -1009,203 +789,208 @@ document.querySelectorAll('input[name=orient]').forEach(r => {
 // SUPABASE
 // =============================================
 function loadSbConfig() {
-  try { const s = localStorage.getItem('bead_sb_config'); if (s) sbConfig = JSON.parse(s); } catch {}
+  try { const s=localStorage.getItem('bead_sb_config'); if(s) sbConfig=JSON.parse(s); } catch {}
 }
-
 function initSupabase() {
-  if (!sbConfig.url || !sbConfig.key) return false;
-  try { supabaseClient = window.supabase.createClient(sbConfig.url, sbConfig.key); return true; }
-  catch (e) { showToast('Supabase 接続エラー: ' + e.message); return false; }
+  if (!sbConfig.url||!sbConfig.key) return false;
+  try { supabaseClient=window.supabase.createClient(sbConfig.url,sbConfig.key); return true; }
+  catch(e) { showToast('接続エラー: '+e.message); return false; }
 }
-
 async function ensureTable() {
   if (!supabaseClient) return false;
-  const { error } = await supabaseClient.from('bead_patterns').select('id').limit(1);
-  if (error && error.code === '42P01') { showToast('テーブルが見つかりません。'); return false; }
+  const {error}=await supabaseClient.from('bead_patterns').select('id').limit(1);
+  if (error&&error.code==='42P01') { showToast('テーブルが見つかりません'); return false; }
   return true;
 }
 
 document.getElementById('btnSave').addEventListener('click', () => {
-  if (!sbConfig.url || !sbConfig.key) { showToast('Supabase 設定を先に入力してください'); openModal('modalSupabase'); return; }
+  if (!sbConfig.url||!sbConfig.key) { showToast('Supabase設定を入力してください'); openModal('modalSupabase'); return; }
   openModal('modalSave');
-  document.getElementById('savePatternName').value = currentPatternName;
-  document.getElementById('overwriteHint').style.display = currentPatternId ? 'block' : 'none';
+  document.getElementById('savePatternName').value=currentPatternName;
+  document.getElementById('overwriteHint').style.display=currentPatternId?'block':'none';
   document.getElementById('savePatternName').focus();
 });
 
 document.getElementById('saveConfirmBtn').addEventListener('click', async () => {
-  const name = document.getElementById('savePatternName').value.trim();
+  const name=document.getElementById('savePatternName').value.trim();
   if (!name) { showToast('図案名を入力してください'); return; }
   if (!initSupabase()) return;
   if (!await ensureTable()) return;
-  const payload = { name, cols, rows, orientation, grid: JSON.stringify(grid), updated_at: new Date().toISOString() };
+  const payload={name,cols,rows,orientation,grid:JSON.stringify(grid),updated_at:new Date().toISOString()};
   let error;
-  if (currentPatternId && document.getElementById('savePatternName').value.trim() === currentPatternName) {
-    ({ error } = await supabaseClient.from('bead_patterns').update(payload).eq('id', currentPatternId));
-    if (!error) currentPatternName = name;
+  if (currentPatternId&&document.getElementById('savePatternName').value.trim()===currentPatternName) {
+    ({error}=await supabaseClient.from('bead_patterns').update(payload).eq('id',currentPatternId));
+    if (!error) currentPatternName=name;
   } else {
-    const { data, error: ie } = await supabaseClient.from('bead_patterns').insert(payload).select('id').single();
-    error = ie;
-    if (!error && data) { currentPatternId = data.id; currentPatternName = name; }
+    const {data,error:ie}=await supabaseClient.from('bead_patterns').insert(payload).select('id').single();
+    error=ie; if (!error&&data){currentPatternId=data.id;currentPatternName=name;}
   }
-  if (error) showToast('保存エラー: ' + error.message);
+  if (error) showToast('保存エラー: '+error.message);
   else { showToast(`「${name}」を保存しました`); closeModal('modalSave'); }
 });
-
 document.getElementById('saveCancelBtn').addEventListener('click', () => closeModal('modalSave'));
 
 document.getElementById('btnLoad').addEventListener('click', async () => {
-  if (!sbConfig.url || !sbConfig.key) { showToast('Supabase 設定を先に入力してください'); openModal('modalSupabase'); return; }
+  if (!sbConfig.url||!sbConfig.key) { showToast('Supabase設定を入力してください'); openModal('modalSupabase'); return; }
   if (!initSupabase()) return;
   openModal('modalLoad');
-  document.getElementById('patternList').innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">読み込み中...</div>';
-  const { data, error } = await supabaseClient.from('bead_patterns').select('id,name,cols,rows,orientation,grid,updated_at').order('updated_at', { ascending: false });
-  if (error) { document.getElementById('patternList').innerHTML = `<div style="padding:16px;color:var(--muted);font-size:13px;">エラー: ${error.message}</div>`; return; }
-  if (!data || data.length === 0) { document.getElementById('patternList').innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">保存された図案がありません</div>'; return; }
-  const list = document.getElementById('patternList');
-  list.innerHTML = '';
+  document.getElementById('patternList').innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">読み込み中...</div>';
+  const {data,error}=await supabaseClient.from('bead_patterns').select('id,name,cols,rows,orientation,grid,updated_at').order('updated_at',{ascending:false});
+  if (error){document.getElementById('patternList').innerHTML=`<div style="padding:16px;color:var(--muted);font-size:13px;">エラー: ${error.message}</div>`;return;}
+  if (!data||!data.length){document.getElementById('patternList').innerHTML='<div style="padding:16px;text-align:center;color:var(--muted);font-size:13px;">保存された図案がありません</div>';return;}
+  const list=document.getElementById('patternList'); list.innerHTML='';
   data.forEach(p => {
-    const item = document.createElement('div');
-    item.className = 'pattern-item';
-    const date = new Date(p.updated_at).toLocaleString('ja-JP', { month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
-    item.innerHTML = `<span>${p.name}</span><span class="meta">${p.cols}×${p.rows} ${p.orientation === 'tate' ? '縦' : '横'} ${date}</span>`;
+    const item=document.createElement('div'); item.className='pattern-item';
+    const date=new Date(p.updated_at).toLocaleString('ja-JP',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+    item.innerHTML=`<span>${p.name}</span><span class="meta">${p.cols}×${p.rows} ${p.orientation==='tate'?'縦':'横'} ${date}</span>`;
     item.addEventListener('click', () => {
-      cols = p.cols; rows = p.rows;
-      orientation = p.orientation || 'tate';
-      document.querySelector(`input[name=orient][value="${orientation}"]`).checked = true;
-      grid = JSON.parse(p.grid);
-      history = []; redoStack = [];
-      currentPatternId = p.id; currentPatternName = p.name;
-      drawCanvas(); updateInfo();
-      closeModal('modalLoad');
+      cols=p.cols;rows=p.rows;orientation=p.orientation||'tate';
+      document.querySelector(`input[name=orient][value="${orientation}"]`).checked=true;
+      grid=JSON.parse(p.grid);history=[];redoStack=[];
+      currentPatternId=p.id;currentPatternName=p.name;
+      drawCanvas();updateInfo();closeModal('modalLoad');
       showToast(`「${p.name}」を読み込みました`);
     });
     list.appendChild(item);
   });
 });
-
 document.getElementById('loadCancelBtn').addEventListener('click', () => closeModal('modalLoad'));
-
 document.getElementById('btnSupabaseConfig').addEventListener('click', () => {
-  document.getElementById('sbUrl').value = sbConfig.url;
-  document.getElementById('sbKey').value = sbConfig.key;
+  document.getElementById('sbUrl').value=sbConfig.url;
+  document.getElementById('sbKey').value=sbConfig.key;
   openModal('modalSupabase');
 });
 document.getElementById('sbCancel').addEventListener('click', () => closeModal('modalSupabase'));
 document.getElementById('sbSave').addEventListener('click', () => {
-  sbConfig.url = document.getElementById('sbUrl').value.trim();
-  sbConfig.key = document.getElementById('sbKey').value.trim();
-  localStorage.setItem('bead_sb_config', JSON.stringify(sbConfig));
-  supabaseClient = null;
-  closeModal('modalSupabase');
-  showToast('Supabase 設定を保存しました');
+  sbConfig.url=document.getElementById('sbUrl').value.trim();
+  sbConfig.key=document.getElementById('sbKey').value.trim();
+  localStorage.setItem('bead_sb_config',JSON.stringify(sbConfig));
+  supabaseClient=null; closeModal('modalSupabase'); showToast('Supabase設定を保存しました');
 });
 
 // =============================================
 // EXPORT PNG
 // =============================================
 document.getElementById('btnExport').addEventListener('click', () => {
-  const { cw, ch } = getCellSize();
-  const MARGIN = 36;
+  const { cw, ch } = getExportCellSize();
+  const MARGIN = Math.max(32, ch * 1.6); // 段番号エリア
   const gridW = cols * cw + 1;
   const gridH = rows * ch + 1;
   const totalW = MARGIN + gridW + MARGIN;
 
   const eCanvas = document.createElement('canvas');
-  eCanvas.width = totalW;
-  eCanvas.height = gridH;
+  eCanvas.width = totalW; eCanvas.height = gridH;
   const ec = eCanvas.getContext('2d');
 
   ec.fillStyle = '#ffffff';
   ec.fillRect(0, 0, totalW, gridH);
 
-  // ビーズ
+  // ビーズ/ドリル描画
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const x = MARGIN + c * cw, y = r * ch;
       ec.fillStyle = grid[r][c] || '#faf8f4';
-      ec.fillRect(x + 1, y + 1, cw - 1, ch - 1);
+      ec.fillRect(x+1, y+1, cw-1, ch-1);
       if (grid[r][c]) {
-        ec.fillStyle = 'rgba(255,255,255,0.2)';
-        ec.beginPath();
-        ec.ellipse(x + cw * 0.3, y + ch * 0.3, cw * 0.2, ch * 0.15, -0.4, 0, Math.PI * 2);
-        ec.fill();
+        if (appMode === 'diamond') {
+          ec.fillStyle = 'rgba(255,255,255,0.25)';
+          const cx2=x+cw*0.5, cy2=y+ch*0.5, rr=Math.min(cw,ch)*0.28;
+          ec.beginPath();
+          ec.moveTo(cx2, cy2-rr); ec.lineTo(cx2+rr*0.55, cy2);
+          ec.lineTo(cx2, cy2+rr*0.5); ec.lineTo(cx2-rr*0.55, cy2);
+          ec.closePath(); ec.fill();
+        } else {
+          ec.fillStyle = 'rgba(255,255,255,0.2)';
+          ec.beginPath();
+          ec.ellipse(x+cw*0.3, y+ch*0.3, cw*0.2, ch*0.15, -0.4, 0, Math.PI*2);
+          ec.fill();
+        }
       }
     }
   }
 
   // 通常線
-  ec.strokeStyle = '#c8c4bc'; ec.lineWidth = 0.5;
-  for (let c = 0; c <= cols; c++) {
-    const x = MARGIN + c * cw;
-    ec.beginPath(); ec.moveTo(x, 0); ec.lineTo(x, gridH); ec.stroke();
-  }
-  for (let r = 0; r <= rows; r++) {
-    const y = r * ch;
-    ec.beginPath(); ec.moveTo(MARGIN, y); ec.lineTo(MARGIN + gridW - 1, y); ec.stroke();
-  }
+  ec.strokeStyle='#c8c4bc'; ec.lineWidth=0.5;
+  for (let c=0;c<=cols;c++){const x=MARGIN+c*cw;ec.beginPath();ec.moveTo(x,0);ec.lineTo(x,gridH);ec.stroke();}
+  for (let r=0;r<=rows;r++){const y=r*ch;ec.beginPath();ec.moveTo(MARGIN,y);ec.lineTo(MARGIN+gridW-1,y);ec.stroke();}
   // 強調線
-  ec.strokeStyle = '#6680bb'; ec.lineWidth = 2.5;
-  for (let c = 5; c <= cols; c += 5) {
-    const x = MARGIN + c * cw;
-    ec.beginPath(); ec.moveTo(x, 0); ec.lineTo(x, gridH); ec.stroke();
-  }
-  for (let fb = 5; fb <= rows; fb += 5) {
-    const y = (rows - fb) * ch;
-    ec.beginPath(); ec.moveTo(MARGIN, y); ec.lineTo(MARGIN + gridW - 1, y); ec.stroke();
-  }
+  ec.strokeStyle='#6680bb'; ec.lineWidth=Math.max(1.5, cw*0.08);
+  for (let c=5;c<=cols;c+=5){const x=MARGIN+c*cw;ec.beginPath();ec.moveTo(x,0);ec.lineTo(x,gridH);ec.stroke();}
+  for (let fb=5;fb<=rows;fb+=5){const y=(rows-fb)*ch;ec.beginPath();ec.moveTo(MARGIN,y);ec.lineTo(MARGIN+gridW-1,y);ec.stroke();}
 
   // 段番号
-  const fontSize = Math.max(10, Math.min(ch * 0.55, 14));
-  ec.font = `bold ${fontSize}px sans-serif`;
-  ec.textAlign = 'center'; ec.textBaseline = 'middle';
-  for (let r = 0; r < rows; r++) {
-    const rowNum = rows - r;
-    const y = r * ch + ch / 2;
-    const isMajor = rowNum % 5 === 0;
-    ec.fillStyle = isMajor ? '#4466aa' : '#888880';
-    ec.fillText(String(rowNum), MARGIN / 2, y);
-    ec.fillText(String(rowNum), MARGIN + gridW - 1 + MARGIN / 2, y);
+  const fontSize = Math.max(10, Math.min(ch * 0.55, 16));
+  ec.font=`bold ${fontSize}px sans-serif`;
+  ec.textAlign='center'; ec.textBaseline='middle';
+  for (let r=0;r<rows;r++) {
+    const rowNum=rows-r, y=r*ch+ch/2;
+    const isMajor=rowNum%5===0;
+    ec.fillStyle=isMajor?'#4466aa':'#888880';
+    ec.fillText(String(rowNum), MARGIN/2, y);
+    ec.fillText(String(rowNum), MARGIN+gridW-1+MARGIN/2, y);
   }
 
-  const link = document.createElement('a');
-  link.download = 'bead-pattern.png';
-  link.href = eCanvas.toDataURL('image/png');
-  link.click();
+  // ダイヤモンドアートの場合、実寸情報をフッターに追加
+  if (appMode === 'diamond') {
+    const footerH = 28;
+    const finalCanvas = document.createElement('canvas');
+    finalCanvas.width = totalW;
+    finalCanvas.height = gridH + footerH;
+    const fc = finalCanvas.getContext('2d');
+    fc.fillStyle = '#ffffff';
+    fc.fillRect(0, 0, totalW, gridH + footerH);
+    fc.drawImage(eCanvas, 0, 0);
+    fc.fillStyle = '#7a7670';
+    fc.font = `${Math.max(10, footerH * 0.5)}px sans-serif`;
+    fc.textAlign = 'center'; fc.textBaseline = 'middle';
+    const totalWmm = (cols * mmW).toFixed(1), totalHmm = (rows * mmH).toFixed(1);
+    fc.fillText(
+      `${cols}目 × ${rows}段 ／ マス${mmW}×${mmH}mm ／ 仕上がり約 ${totalWmm}×${totalHmm}mm（${(totalWmm/10).toFixed(1)}×${(totalHmm/10).toFixed(1)}cm）`,
+      totalW/2, gridH + footerH/2
+    );
+    const link=document.createElement('a');
+    link.download='diamond-art-pattern.png';
+    link.href=finalCanvas.toDataURL('image/png');
+    link.click();
+  } else {
+    const link=document.createElement('a');
+    link.download='bead-pattern.png';
+    link.href=eCanvas.toDataURL('image/png');
+    link.click();
+  }
   showToast('PNG書き出し完了');
 });
 
 // =============================================
 // MODAL HELPERS
 // =============================================
-function openModal(id) { document.getElementById(id).classList.add('open'); }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-document.querySelectorAll('.modal-overlay').forEach(mo => {
-  mo.addEventListener('click', e => { if (e.target === mo) closeModal(mo.id); });
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(mo=>{
+  mo.addEventListener('click',e=>{if(e.target===mo)closeModal(mo.id);});
 });
 
 // =============================================
 // TOAST
 // =============================================
 let toastTimer;
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
 }
 
 // =============================================
 // KEYBOARD SHORTCUTS
 // =============================================
 document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT') return;
-  if (e.key === 'z' && (e.ctrlKey || e.metaKey) && !e.shiftKey) { e.preventDefault(); document.getElementById('toolUndo').click(); }
-  if ((e.key === 'y' && (e.ctrlKey || e.metaKey)) || (e.key === 'z' && (e.ctrlKey || e.metaKey) && e.shiftKey)) { e.preventDefault(); document.getElementById('toolRedo').click(); }
-  if (e.key === 'p' || e.key === 'P') setTool('pen');
-  if (e.key === 'e' || e.key === 'E') setTool('eraser');
-  if (e.key === 'i' || e.key === 'I') setTool('eyedropper');
+  if (e.target.tagName==='INPUT') return;
+  if (e.key==='z'&&(e.ctrlKey||e.metaKey)&&!e.shiftKey){e.preventDefault();document.getElementById('toolUndo').click();}
+  if ((e.key==='y'&&(e.ctrlKey||e.metaKey))||(e.key==='z'&&(e.ctrlKey||e.metaKey)&&e.shiftKey)){e.preventDefault();document.getElementById('toolRedo').click();}
+  if (e.key==='p'||e.key==='P') setTool('pen');
+  if (e.key==='e'||e.key==='E') setTool('eraser');
+  if (e.key==='i'||e.key==='I') setTool('eyedropper');
 });
 
 // =============================================
@@ -1214,7 +999,10 @@ document.addEventListener('keydown', e => {
 loadSbConfig();
 buildSelects();
 buildPalette();
+buildMmPresets();
 setCurrentColor('#c06b6b');
+// mmSectionは常時表示（両モードで使える）
+document.getElementById('mmSection').style.display = 'block';
 initGrid(4, 4);
 </script>
 </body>
