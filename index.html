@@ -128,6 +128,39 @@
   .pattern-item:hover { background: #f4f2ee; }
   .pattern-item .meta { font-size: 11px; color: var(--muted); }
 
+  /* カスタムカラー保存 */
+  .custom-palette-grid { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 6px; min-height: 24px; }
+  .custom-palette-cell {
+    width: 20px; height: 20px; border-radius: 3px;
+    border: 1.5px solid rgba(0,0,0,0.15); cursor: pointer;
+    transition: transform 0.1s; position: relative;
+  }
+  .custom-palette-cell:hover { transform: scale(1.2); z-index: 1; }
+  .custom-palette-cell:hover .del-btn { display: flex; }
+  .custom-palette-cell.selected { border: 2.5px solid var(--text); box-shadow: 0 0 0 1px #fff inset; }
+  .del-btn {
+    display: none; position: absolute; top: -5px; right: -5px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 9px; align-items: center; justify-content: center;
+    cursor: pointer; z-index: 2; line-height: 1;
+  }
+  .hex-input-row { display: flex; align-items: center; gap: 5px; margin-top: 5px; }
+  .hex-input-row input[type=text] {
+    width: 80px; border: 1px solid var(--border); border-radius: 4px;
+    padding: 3px 6px; font-size: 12px; font-family: monospace;
+    color: var(--text); background: #faf8f4;
+  }
+  .hex-input-row input[type=text]:focus { outline: none; border-color: var(--accent2); }
+  .hex-swatch { width: 20px; height: 20px; border-radius: 3px; border: 1.5px solid var(--border); flex-shrink: 0; }
+  .add-color-btn {
+    padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border);
+    background: #faf8f4; font-size: 11px; color: var(--muted);
+    cursor: pointer; font-family: var(--font); transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .add-color-btn:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
   /* Toast */
   #toast { position: fixed; bottom: 24px; right: 24px; background: var(--header); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 200; }
   #toast.show { opacity: 1; }
@@ -258,10 +291,22 @@
     <div class="sidebar-section">
       <div class="section-title">カラーパレット</div>
       <div class="palette-grid" id="paletteGrid"></div>
+
+      <!-- 現在色 + カラーピッカー + #コード入力 -->
       <div class="current-color-row">
         <div class="current-swatch" id="currentSwatch"></div>
-        <span class="custom-color-label">カスタム</span>
-        <input type="color" id="colorPickerInput" value="#c06b6b">
+        <input type="color" id="colorPickerInput" value="#c06b6b" title="カラーピッカー">
+      </div>
+      <div class="hex-input-row">
+        <div class="hex-swatch" id="hexSwatch"></div>
+        <input type="text" id="hexInput" placeholder="#c06b6b" maxlength="7" spellcheck="false">
+        <button class="add-color-btn" id="btnAddColor">＋ 保存</button>
+      </div>
+
+      <!-- カスタムカラー保存パレット -->
+      <div class="section-title" style="margin-top:8px">保存した色</div>
+      <div class="custom-palette-grid" id="customPaletteGrid">
+        <span style="font-size:10px;color:var(--muted);align-self:center">なし（＋保存で追加）</span>
       </div>
     </div>
 
@@ -744,11 +789,17 @@ function buildPalette() {
 }
 
 function setCurrentColor(c) {
-  currentColor = c;
-  document.getElementById('currentSwatch').style.background = c;
-  document.getElementById('colorPickerInput').value = rgbToHex(c);
+  const hex = rgbToHex(c);
+  currentColor = hex;
+  document.getElementById('currentSwatch').style.background = hex;
+  document.getElementById('hexSwatch').style.background = hex;
+  document.getElementById('colorPickerInput').value = hex;
+  document.getElementById('hexInput').value = hex;
   document.querySelectorAll('.palette-cell').forEach(el => {
-    el.classList.toggle('selected', el.style.background === hexToRgb(c) || el.title === c);
+    el.classList.toggle('selected', el.style.background === hexToRgb(hex) || el.title === hex);
+  });
+  document.querySelectorAll('.custom-palette-cell').forEach(el => {
+    el.classList.toggle('selected', el.dataset.color === hex);
   });
 }
 
@@ -763,6 +814,86 @@ function rgbToHex(color) {
   return '#'+m.slice(0,3).map(n=>parseInt(n).toString(16).padStart(2,'0')).join('');
 }
 document.getElementById('colorPickerInput').addEventListener('input', e => setCurrentColor(e.target.value));
+
+// =============================================
+// CUSTOM COLOR PALETTE
+// =============================================
+let customColors = [];
+
+function loadCustomColors() {
+  try {
+    const s = localStorage.getItem('bead_custom_colors');
+    if (s) customColors = JSON.parse(s);
+  } catch {}
+}
+
+function saveCustomColors() {
+  localStorage.setItem('bead_custom_colors', JSON.stringify(customColors));
+}
+
+function renderCustomPalette() {
+  const grid = document.getElementById('customPaletteGrid');
+  grid.innerHTML = '';
+  if (customColors.length === 0) {
+    grid.innerHTML = '<span style="font-size:10px;color:var(--muted);align-self:center">なし（＋保存で追加）</span>';
+    return;
+  }
+  customColors.forEach((color, idx) => {
+    const cell = document.createElement('div');
+    cell.className = 'custom-palette-cell';
+    cell.style.background = color;
+    cell.dataset.color = color;
+    cell.title = color;
+
+    const del = document.createElement('div');
+    del.className = 'del-btn';
+    del.textContent = '×';
+    del.addEventListener('click', e => {
+      e.stopPropagation();
+      customColors.splice(idx, 1);
+      saveCustomColors();
+      renderCustomPalette();
+    });
+
+    cell.appendChild(del);
+    cell.addEventListener('click', () => setCurrentColor(color));
+    grid.appendChild(cell);
+  });
+  // 選択状態を反映
+  grid.querySelectorAll('.custom-palette-cell').forEach(el => {
+    el.classList.toggle('selected', el.dataset.color === currentColor);
+  });
+}
+
+document.getElementById('btnAddColor').addEventListener('click', () => {
+  const color = currentColor;
+  if (!color || !color.startsWith('#')) { showToast('有効な色を選択してください'); return; }
+  if (customColors.includes(color)) { showToast('すでに保存されています'); return; }
+  customColors.push(color);
+  saveCustomColors();
+  renderCustomPalette();
+  showToast(color + ' を保存しました');
+});
+
+// #コード直接入力
+const hexInput = document.getElementById('hexInput');
+hexInput.addEventListener('input', e => {
+  let val = e.target.value.trim();
+  if (!val.startsWith('#')) val = '#' + val;
+  document.getElementById('hexSwatch').style.background = isValidHex(val) ? val : '#faf8f4';
+  if (isValidHex(val)) setCurrentColor(val);
+});
+hexInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    let val = hexInput.value.trim();
+    if (!val.startsWith('#')) val = '#' + val;
+    if (isValidHex(val)) setCurrentColor(val);
+  }
+});
+
+function isValidHex(hex) {
+  return /^#[0-9a-fA-F]{6}$/.test(hex);
+}
 
 // =============================================
 // SIZE SELECTS & ORIENTATION
@@ -997,9 +1128,11 @@ document.addEventListener('keydown', e => {
 // STARTUP
 // =============================================
 loadSbConfig();
+loadCustomColors();
 buildSelects();
 buildPalette();
 buildMmPresets();
+renderCustomPalette();
 setCurrentColor('#c06b6b');
 // mmSectionは常時表示（両モードで使える）
 document.getElementById('mmSection').style.display = 'block';
